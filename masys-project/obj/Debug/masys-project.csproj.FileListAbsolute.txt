@@ -1,0 +1,9 @@
+C:\Users\cbeja\source\repos\masys-project\masys-project\bin\Debug\masys-project.exe.config
+C:\Users\cbeja\source\repos\masys-project\masys-project\bin\Debug\masys-project.exe
+C:\Users\cbeja\source\repos\masys-project\masys-project\bin\Debug\masys-project.pdb
+C:\Users\cbeja\source\repos\masys-project\masys-project\bin\Debug\ActressMas.dll
+C:\Users\cbeja\source\repos\masys-project\masys-project\obj\Debug\masys-project.csproj.AssemblyReference.cache
+C:\Users\cbeja\source\repos\masys-project\masys-project\obj\Debug\masys-project.csproj.CoreCompileInputs.cache
+C:\Users\cbeja\source\repos\masys-project\masys-project\obj\Debug\masys-project.csproj.CopyComplete
+C:\Users\cbeja\source\repos\masys-project\masys-project\obj\Debug\masys-project.exe
+C:\Users\cbeja\source\repos\masys-project\masys-project\obj\Debug\masys-project.pdb
