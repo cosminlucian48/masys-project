@@ -10,15 +10,14 @@ namespace Project
         {
             var env = new ActressMas.EnvironmentMas(0, 200);
 
-            for (int i = 1; i <= Utils.NoBidders; i++)
+            for (int i = 1; i <= 2; i++)
             {
-                int agentValuation = Utils.MinPrice + Utils.RandNoGen.Next(Utils.MaxPrice - Utils.MinPrice);
-                var bidderAgent = new CarAgent(agentValuation);
-                env.Add(bidderAgent, string.Format("bidder{0:D2}", i));
+                var carAgent = new CarAgent();
+                env.Add(carAgent, string.Format("car{0:D2}", i));
             }
 
-            var auctioneerAgent = new TrafficLightAgent();
-            env.Add(auctioneerAgent, "auctioneer");
+            var trafficLightAgent = new TrafficLightAgent();
+            env.Add(trafficLightAgent, "trafficlight");
 
             env.Start();
         }

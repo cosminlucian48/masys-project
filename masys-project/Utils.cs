@@ -6,17 +6,11 @@ namespace Project
 {
     public class Utils
     {
-        public static int NoBidders = 5;
-        public static int ReservePrice = 100;
-        public static int MinPrice = 50;
-        public static int MaxPrice = 500;
-        public static int Increment = 10;
-
         public static string TrafficLightIntelligence = ConfigurationManager.AppSettings.Get("TrafficLightIntelligence");
         public static string CarGenerationRate = ConfigurationManager.AppSettings.Get("CarGenerationRate");
         public static string CarPrioritization = ConfigurationManager.AppSettings.Get("CarPrioritization");
 
-        public static int Delay = 1000;
+        public static int Delay = 10000;
         public static Random RandNoGen = new Random();
 
         public static void ParseMessage(string content, out string action, out string parameters)

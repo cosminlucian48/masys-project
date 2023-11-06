@@ -6,16 +6,12 @@ namespace Project
 {
     public class CarAgent : Agent
     {
-        private int _valuation;
-
-        public CarAgent(int val)
-        {
-            _valuation = val;
-        }
+        public CarAgent(){}
 
         public override void Setup()
         {
-            Console.WriteLine("[{0}]: My valuation is  {1}", this.Name, _valuation);
+            Console.WriteLine("[{0}]: hello from car setup.", this.Name);
+            Broadcast("hello");
         }
 
         public override void Act(Message message)
@@ -28,12 +24,11 @@ namespace Project
 
             switch (action)
             {
-                case "price":
-                    HandlePrice(Convert.ToInt32(parameters));
+                case "hello":
+                    Send("trafficlight", "hello");
                     break;
 
                 case "winner":
-                    HandleWinner(parameters);
                     break;
 
                 default:
@@ -41,18 +36,6 @@ namespace Project
             }
         }
 
-        private void HandlePrice(int currentPrice)
-        {
-            if (currentPrice <= _valuation)
-                Send("auctioneer", "bid");
-        }
 
-        private void HandleWinner(string winner)
-        {
-            if (winner == this.Name)
-                Console.WriteLine("[{0}]: I have won.", this.Name);
-
-            Stop();
-        }
     }
 }
