@@ -6,7 +6,11 @@ namespace Project
 {
     public class CarAgent : Agent
     {
-        public CarAgent(){}
+        public Position currentPos, targetPos;
+        public CarAgent(Position start, Position target) {
+            this.currentPos = start;
+            this.targetPos = target;
+        }
 
         public override void Setup()
         {

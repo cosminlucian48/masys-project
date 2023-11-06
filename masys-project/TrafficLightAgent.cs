@@ -8,12 +8,13 @@ namespace Project
     public class TrafficLightAgent : Agent
     {
         private Timer _timer;
-
-        public TrafficLightAgent()
+        public Position p;
+        public TrafficLightAgent(Position p)
         {
             _timer = new Timer();
             _timer.Elapsed += t_Elapsed;
             _timer.Interval = Utils.Delay;
+            this.p = p;
         }
 
         private void t_Elapsed(object sender, ElapsedEventArgs e)

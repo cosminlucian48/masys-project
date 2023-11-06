@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Position.cs" />
     <Compile Include="TrafficLightAgent.cs" />
     <Compile Include="CarAgent.cs" />
     <Compile Include="Program.cs" />
