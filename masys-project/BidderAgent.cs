@@ -15,7 +15,7 @@ namespace Project
 
         public override void Setup()
         {
-            Console.WriteLine("[{0}]: My valuation is {1}", this.Name, _valuation);
+            Console.WriteLine("[{0}]: My valuation is  {1}", this.Name, _valuation);
         }
 
         public override void Act(Message message)
