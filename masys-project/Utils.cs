@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration;
+using System.Collections.Specialized;
 
 namespace Project
 {
@@ -9,6 +11,10 @@ namespace Project
         public static int MinPrice = 50;
         public static int MaxPrice = 500;
         public static int Increment = 10;
+
+        public static string TrafficLightIntelligence = ConfigurationManager.AppSettings.Get("TrafficLightIntelligence");
+        public static string CarGenerationRate = ConfigurationManager.AppSettings.Get("CarGenerationRate");
+        public static string CarPrioritization = ConfigurationManager.AppSettings.Get("CarPrioritization");
 
         public static int Delay = 1000;
         public static Random RandNoGen = new Random();

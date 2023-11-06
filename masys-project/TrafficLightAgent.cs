@@ -5,14 +5,14 @@ using System.Timers;
 
 namespace Project
 {
-    public class AuctioneerAgent : Agent
+    public class TrafficLightAgent : Agent
     {
         private List<string> _bidders;
         private string _highestBidder;
         private int _currentPrice;
         private Timer _timer;
 
-        public AuctioneerAgent()
+        public TrafficLightAgent()
         {
             _bidders = new List<string>();
             _timer = new Timer();

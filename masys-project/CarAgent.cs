@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace Project
 {
-    public class BidderAgent : Agent
+    public class CarAgent : Agent
     {
         private int _valuation;
 
-        public BidderAgent(int val)
+        public CarAgent(int val)
         {
             _valuation = val;
         }
