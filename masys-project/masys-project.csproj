@@ -39,6 +39,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +50,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Position.cs" />
+    <Compile Include="TrafficAgent.cs" />
+    <Compile Include="TrafficForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrafficForm.Designer.cs">
+      <DependentUpon>TrafficForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TrafficLightAgent.cs" />
     <Compile Include="CarAgent.cs" />
     <Compile Include="Program.cs" />

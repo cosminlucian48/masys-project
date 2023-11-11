@@ -12,13 +12,16 @@ namespace Project
 
             for (int i = 1; i <= 2; i++)
             {
-                var carAgent = new CarAgent(new Position(Utils.RandNoGen.Next(4), 0), new Position(Utils.RandNoGen.Next(4), 3));
+                var carAgent = new CarAgent(new Position(Utils.interestPointsX[Utils.RandNoGen.Next(4)], 0), new Position(Utils.interestPointsX[Utils.RandNoGen.Next(4)], 18));
                 env.Add(carAgent, string.Format("car{0:D2}", i));
             }
 
 
             var trafficLightAgent = new TrafficLightAgent(new Position(Utils.RandNoGen.Next(4), Utils.RandNoGen.Next(2) + 1));
             env.Add(trafficLightAgent, "trafficlight");
+
+            var trafficAgent = new TrafficAgent();
+            env.Add(trafficAgent, "traffic");
 
             env.Start();
         }
