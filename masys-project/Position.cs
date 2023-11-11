@@ -16,5 +16,10 @@ namespace Project
             this.x = x;
             this.y = y;
         }
+
+        public override string ToString()
+        {
+            return Utils.Str(x, y);
+        }
     }
 }
