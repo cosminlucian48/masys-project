@@ -57,6 +57,7 @@ namespace Project
 
             int minXY = Math.Min(w, h);
             int cellSize = (minXY) / Utils.gridLength;
+            Font textFont = new Font("Arial", 12);
             Font arrowFont = new Font("Arial", 40);
 
             foreach (int pos in Utils.interestPointsX)
@@ -90,12 +91,13 @@ namespace Project
 
             if (_ownerAgent != null)
             {
-                foreach (string v in _ownerAgent.CarPositions.Values)
+                foreach (KeyValuePair<string, string> entry in _ownerAgent.CarPositions)
                 {
-                    string[] t = v.Split();
+                    string[] t = entry.Value.Split();
                     int x = Convert.ToInt32(t[0]);
                     int y = Convert.ToInt32(t[1]);
                     g.FillEllipse(Brushes.Blue, x * cellSize+4, y * cellSize+4, cellSize-8, cellSize-8); //4 and 8 to make the car smaller and put it in the center
+                    g.DrawString(entry.Key.Substring(3), textFont, Brushes.White, new PointF(x * cellSize + 10, y * cellSize + 10));
                 }
 
             }

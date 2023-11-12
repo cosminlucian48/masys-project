@@ -73,6 +73,7 @@ namespace Project
                 default:
                     break;
             }
+            if (_formGui == null) Thread.Sleep(100);
             _formGui.UpdatePlanetGUI();
         }
 
