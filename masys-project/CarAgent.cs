@@ -7,13 +7,12 @@ namespace Project
     public class CarAgent : Agent
     {
         public Position currentPos, targetPos;
+        private enum State { Up, Left, Right };
         private State _state;
         public CarAgent(Position start, Position target) {
             this.currentPos = start;
             this.targetPos = target;
         }
-
-        private enum State { Up, Left, Right };
 
         public override void Setup()
         {
@@ -37,6 +36,23 @@ namespace Project
                     break;
 
                 case "move":
+                    string direction = parameters;
+                    Console.Write(direction);
+                    switch (direction)
+                    {
+                        case "up":
+                            _state = State.Up;
+                            break;
+                        case "left":
+                            _state = State.Left;
+                            break;
+                        case "right":
+                            _state = State.Right;
+                            break;
+                        default:
+                            _state = State.Up;
+                            break;
+                    }
                     HandleMove();
                     break;
 

@@ -14,6 +14,7 @@ namespace Project
     {
         private TrafficAgent _ownerAgent;
         private Bitmap _doubleBufferImage;
+        private object _locker = new object();
         public TrafficForm()
         {
             InitializeComponent();
@@ -102,8 +103,11 @@ namespace Project
 
             }
 
-            Graphics pbg = pictureBox.CreateGraphics();
-            pbg.DrawImage(_doubleBufferImage, 0, 0);
+            lock (_locker)
+            {
+                Graphics pbg = pictureBox.CreateGraphics();
+                pbg.DrawImage(_doubleBufferImage, 0, 0);
+            }
         }
     }
 }

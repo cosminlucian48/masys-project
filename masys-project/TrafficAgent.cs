@@ -15,6 +15,7 @@ namespace Project
     {
         private TrafficForm _formGui;
         private System.Timers.Timer _timer;
+        private readonly object positionsLock = new object();
 
         public Dictionary<string, string> CarPositions { get; set; }
         public Dictionary<string, string> CarDestinations { get; set; }
@@ -75,7 +76,10 @@ namespace Project
             }
 
             while (_formGui == null) Thread.Sleep(100);
-            _formGui.UpdatePlanetGUI();
+            lock (positionsLock)
+            {
+                _formGui.UpdatePlanetGUI();
+            }
         }
 
         private void HandleSpawn()
@@ -107,7 +111,7 @@ namespace Project
                     x = possibleX[Utils.RandNoGen.Next(possibleX.Count())];
                     possibleX = possibleX.Where(val => val != x).ToArray();
 
-                    var carAgent = new CarAgent(new Position(x, Utils.gridLength - 1), new Position(x, 0)); //Utils.interestPointsX[Utils.RandNoGen.Next(4)]
+                    var carAgent = new CarAgent(new Position(x, Utils.gridLength - 1), new Position(Utils.interestPointsX[Utils.RandNoGen.Next(4)], 0));
 
                     Utils.noAgents += 1;
                     this.Environment.Add(carAgent, string.Format("car{0:D2}", Utils.noAgents));
@@ -122,7 +126,7 @@ namespace Project
 
             CarPositions.Add(sender, $"{t[0]} {t[1]}");
             CarDestinations.Add(sender, $"{t[2]} {t[3]}");
-            Send(sender, "move");
+            Send(sender, Utils.Str("move", "up"));
         }
 
         private void HandleChange(string sender, string position)
@@ -149,7 +153,26 @@ namespace Project
             }
             else
             {
-                Send(sender, "move");
+                if(actualX == targetX || !Utils.interestPointsY.Contains(actualY))
+                {
+                    Send(sender, Utils.Str("move", "up"));
+                }
+                else
+                {
+                    //TODO: add more conditions here
+                    if(Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
+                    {
+                        Send(sender, Utils.Str("move", "left"));
+                    }
+                    else
+                    {
+                        if(actualX < targetX)
+                        {
+                            Send(sender, Utils.Str("move", "right"));
+                        }
+                        else Send(sender, Utils.Str("move", "up"));
+                    }
+                }
             }
             
         }

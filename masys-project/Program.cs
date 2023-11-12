@@ -12,7 +12,7 @@ namespace Project
             /*Utils.RandNoGen.Next(4)*/
             for (int i = 0; i < 4; i++)
             {
-                var carAgent = new CarAgent(new Position(Utils.interestPointsX[i], Utils.gridLength-1), new Position(Utils.interestPointsX[i], 0));
+                var carAgent = new CarAgent(new Position(Utils.interestPointsX[i], Utils.gridLength-1), new Position(Utils.interestPointsX[Utils.RandNoGen.Next(4)], 0));
                 env.Add(carAgent, string.Format("car{0:D2}", i));
                
                 Utils.noAgents += 1;
