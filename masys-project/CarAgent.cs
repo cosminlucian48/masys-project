@@ -16,7 +16,7 @@ namespace Project
             this.targetPos = target;
         }
 
-        private enum State {Waiting, Up, Left, Right };
+        private enum State { Up, Left, Right };
 
         public override void Setup()
         {
@@ -77,10 +77,7 @@ namespace Project
                     this.currentPos.x += 1;
                     break;
                 default:
-                    Thread.Sleep(Utils.Delay);
-                    _state = _prevState;
-                    HandleMove();
-                    return;
+                    break;
             }
 
             Send("traffic", Utils.Str("change", currentPos.ToString()));
@@ -104,7 +101,7 @@ namespace Project
                 default:
                     break;
             }
-            this._state = State.Waiting;
+            Thread.Sleep(Utils.Delay);
             HandleMove();
         }
 
