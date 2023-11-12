@@ -1,7 +1,5 @@
 ﻿using ActressMas;
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Project
@@ -10,7 +8,6 @@ namespace Project
     {
         public Position currentPos, targetPos;
         private State _state;
-        private State _prevState;
         public CarAgent(Position start, Position target) {
             this.currentPos = start;
             this.targetPos = target;
@@ -85,7 +82,6 @@ namespace Project
 
         public void HandleWait()
         {
-            this._prevState = _state;
             //reverts last move since it was not approved by traffic
             switch (_state)
             {
