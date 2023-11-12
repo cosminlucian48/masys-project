@@ -17,7 +17,7 @@ namespace Project
         public static int[] interestPointsY = { 5, 6, 12, 13 };
         //5 12 r 6 13 l
 
-        public static int Delay = 200;
+        public static int Delay = 100;
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
 

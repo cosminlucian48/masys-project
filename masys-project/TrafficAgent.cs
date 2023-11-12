@@ -73,7 +73,8 @@ namespace Project
                 default:
                     break;
             }
-            if (_formGui == null) Thread.Sleep(100);
+
+            while (_formGui == null) Thread.Sleep(100);
             _formGui.UpdatePlanetGUI();
         }
 
@@ -118,18 +119,19 @@ namespace Project
         private void HandlePosition(string sender, string positions)
         {
             string[] t = positions.Split();
-            int startX = Convert.ToInt32(t[0]);
-            int startY = Convert.ToInt32(t[1]);
-            int targetX = Convert.ToInt32(t[2]);
-            int targetY = Convert.ToInt32(t[3]);
 
-            CarPositions.Add(sender, $"{startX} {startY}");
-            CarDestinations.Add(sender, $"{targetX} {targetY}");
+            CarPositions.Add(sender, $"{t[0]} {t[1]}");
+            CarDestinations.Add(sender, $"{t[2]} {t[3]}");
             Send(sender, "move");
         }
 
         private void HandleChange(string sender, string position)
         {
+            if (CarPositions.Values.Contains(position))
+            {
+                Send(sender, "wait");
+                return;
+            }
             CarPositions[sender] = position;
             //check if at finish
             string[] t = position.Split();

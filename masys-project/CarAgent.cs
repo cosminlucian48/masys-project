@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Project
 {
@@ -9,6 +10,7 @@ namespace Project
     {
         public Position currentPos, targetPos;
         private State _state;
+        private State _prevState;
         public CarAgent(Position start, Position target) {
             this.currentPos = start;
             this.targetPos = target;
@@ -41,6 +43,10 @@ namespace Project
                     HandleMove();
                     break;
 
+                case "wait":
+                    HandleWait();
+                    break;
+
                 case "finish":
                     HandleFinish();
                     break;
@@ -54,11 +60,52 @@ namespace Project
             // TODO: change direction based on states
             // TODO: maybe, before updating position, check if target position is free or not
             //      if position is not free, maybe put car agent on Waiting state, and maybe using a timer get it started again later
-            if (_state == State.Up)
+            /*if (_state == State.Up)
             {
                 this.currentPos.y -= 1;
+            }*/
+
+            switch(_state)
+            {
+                case State.Up:
+                    this.currentPos.y -= 1;
+                    break;
+                case State.Left:
+                    this.currentPos.x -= 1;
+                    break;
+                case State.Right:
+                    this.currentPos.x += 1;
+                    break;
+                default:
+                    Thread.Sleep(Utils.Delay);
+                    _state = _prevState;
+                    HandleMove();
+                    return;
             }
+
             Send("traffic", Utils.Str("change", currentPos.ToString()));
+        }
+
+        public void HandleWait()
+        {
+            this._prevState = _state;
+            //reverts last move since it was not approved by traffic
+            switch (_state)
+            {
+                case State.Up:
+                    this.currentPos.y += 1;
+                    break;
+                case State.Left:
+                    this.currentPos.x += 1;
+                    break;
+                case State.Right:
+                    this.currentPos.x -= 1;
+                    break;
+                default:
+                    break;
+            }
+            this._state = State.Waiting;
+            HandleMove();
         }
 
         public void HandleFinish()
