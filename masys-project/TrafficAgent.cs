@@ -23,7 +23,7 @@ namespace Project
         {
             _timer = new System.Timers.Timer();
             _timer.Elapsed += t_Elapsed;
-            _timer.Interval = 10*Utils.Delay;
+            _timer.Interval = 10*(Utils.Delay+100);
 
             CarPositions = new Dictionary<string, string>();
             CarDestinations = new Dictionary<string, string>();
@@ -84,6 +84,7 @@ namespace Project
 
         private void HandleSpawn()
         {
+               // TODO: check if there is space before spawning a new car
             int x, y;
             string[] t;
             int[] possibleX = { };
@@ -158,8 +159,8 @@ namespace Project
                     Send(sender, Utils.Str("move", "up"));
                 }
                 else
+                //cost
                 {
-                    //TODO: add more conditions here
                     if(Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
                     {
                         Send(sender, Utils.Str("move", "left"));
@@ -170,6 +171,7 @@ namespace Project
                         {
                             Send(sender, Utils.Str("move", "right"));
                         }
+                        // so that it can get on the left direction road. It has to go one more square UP
                         else Send(sender, Utils.Str("move", "up"));
                     }
                 }

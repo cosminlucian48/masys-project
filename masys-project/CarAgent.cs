@@ -8,6 +8,7 @@ namespace Project
     {
         public Position currentPos, targetPos;
         private enum State { Up, Left, Right };
+        
         private State _state;
         public CarAgent(Position start, Position target) {
             this.currentPos = start;
@@ -113,7 +114,7 @@ namespace Project
                 default:
                     break;
             }
-            Thread.Sleep(Utils.Delay);
+            /*Thread.Sleep(Utils.Delay);*/
             HandleMove();
         }
 
