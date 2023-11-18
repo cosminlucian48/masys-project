@@ -153,13 +153,20 @@ namespace Project
 
         private void HandleChange(string sender, string position)
         {
-            if (CarPositions.Values.Contains(position) || (TrafficLightPositions.TryGetValue(position, out string color) && color == "Red")) // or TrafficLights.contains(position) and check also car direction if matches semaphor direction
+            if (CarPositions.Values.Contains(position) && CarPositions.TryGetValue(sender, out string pos) && pos!=position) // or TrafficLights.contains(position) and check also car direction if matches semaphor direction
             {
                 Send(sender, "wait");
                 return;
             }
             CarPositions[sender] = position;
-            //check if at finish
+
+            if (TrafficLightPositions.TryGetValue(position, out string color) && color == "Red")
+            {
+                Send(sender, "wait");
+                return;
+            }
+
+                //check if at finish
             string[] t = position.Split();
             int actualX = Convert.ToInt32(t[0]);
             int actualY = Convert.ToInt32(t[1]);
