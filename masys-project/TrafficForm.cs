@@ -103,6 +103,14 @@ namespace Project
 
             }
 
+            foreach (KeyValuePair<string, string> entry in _ownerAgent.TrafficLightPositions)
+            {
+                string[] t = entry.Key.Split();
+                int x = Convert.ToInt32(t[0]);
+                int y = Convert.ToInt32(t[1]);
+                g.FillEllipse(entry.Value=="Green" ? Brushes.Green : Brushes.Red, (x) * cellSize + 1, (y) * cellSize + 1, cellSize - 20, cellSize - 20);  
+            }
+
             lock (_locker)
             {
                 Graphics pbg = pictureBox.CreateGraphics();

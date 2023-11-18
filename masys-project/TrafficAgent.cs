@@ -19,6 +19,8 @@ namespace Project
 
         public Dictionary<string, string> CarPositions { get; set; }
         public Dictionary<string, string> CarDestinations { get; set; }
+
+        public Dictionary<string, string> TrafficLightPositions { get; set; }
         public TrafficAgent()
         {
             _timer = new System.Timers.Timer();
@@ -27,6 +29,7 @@ namespace Project
 
             CarPositions = new Dictionary<string, string>();
             CarDestinations = new Dictionary<string, string>();
+            TrafficLightPositions = new Dictionary<string, string>();
             Thread t = new Thread(new ThreadStart(GUIThread));
             t.Start();
         }
@@ -70,7 +73,12 @@ namespace Project
                 case "spawn":
                     HandleSpawn();
                     break;
-
+                case "lightposition":
+                    HandleLightPosition(parameters);
+                    break;
+                case "lightchange":
+                    HandleLightChange(parameters); 
+                    break;
                 default:
                     break;
             }
@@ -130,9 +138,22 @@ namespace Project
             Send(sender, Utils.Str("move", "up"));
         }
 
+        private void HandleLightPosition(string position)
+        {
+            string[] t = position.Split();
+            TrafficLightPositions.Add($"{t[0]} {t[1]}", "Green");
+        }
+
+        private void HandleLightChange(string parameters)
+        {
+            string[] t = parameters.Split();
+            TrafficLightPositions[$"{t[0]} {t[1]}"] = t[2];
+        }
+        
+
         private void HandleChange(string sender, string position)
         {
-            if (CarPositions.Values.Contains(position))
+            if (CarPositions.Values.Contains(position) || (TrafficLightPositions.TryGetValue(position, out string color) && color == "Red")) // or TrafficLights.contains(position) and check also car direction if matches semaphor direction
             {
                 Send(sender, "wait");
                 return;

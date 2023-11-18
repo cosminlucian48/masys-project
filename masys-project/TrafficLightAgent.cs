@@ -8,23 +8,30 @@ namespace Project
     public class TrafficLightAgent : Agent
     {
         private Timer _timer;
-        public Position p;
+        public Position pos;
+        /*private enum State { Up, Left, Right };*/
+        private enum State { Red, Green};
+        private State _state;
         public TrafficLightAgent(Position p)
         {
             _timer = new Timer();
             _timer.Elapsed += t_Elapsed;
-            _timer.Interval = Utils.Delay;
-            this.p = p;
+            int homeManyDelays = Utils.RandNoGen.Next(5,30);
+            _timer.Interval = homeManyDelays * Utils.Delay;
+            this.pos = p;
         }
 
         private void t_Elapsed(object sender, ElapsedEventArgs e)
         {
-            Send(this.Name, "wake-up");
+            Send(this.Name, "lightchange");
+            return;
         }
 
         public override void Setup()
         {
-            Console.WriteLine("[{0}]: hello from traffic light setup.", this.Name);
+            Console.WriteLine("[{0}]: Traffic light at p = {1} {2} is ready!", this.Name, this.pos.x, this.pos.y);
+            Send("traffic", Utils.Str("lightposition", pos.ToString()));
+            this._state = State.Green;
             _timer.Start();
         }
 
@@ -37,12 +44,16 @@ namespace Project
 
             switch (action)
             {
-                case "hello":
-                    Console.WriteLine("hello from traffic ligth.");
-                    break;
-
-                case "wake-up":
-                    Console.WriteLine("Waking up!");
+                case "lightchange":
+                    if (_state == State.Red)
+                    {
+                        _state = State.Green;
+                    }
+                    else
+                    {
+                        _state = State.Red;
+                    }
+                    Send("traffic", Utils.Str("lightchange",Utils.Str(pos.ToString(),_state)));
                     break;
 
                 default:

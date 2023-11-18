@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace Project
 {
@@ -15,11 +17,55 @@ namespace Project
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
         public static int[] interestPointsY = { 5, 6, 12, 13 };
         //5 12 L --- 6 13 R
+        public static List<int[]> trafficLightsPos = new List<int[]>();
 
         public static int Delay = 500;
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
 
+        public static void initializeTrafficLights()
+        {
+            int totalCombinations = interestPointsX.Length * interestPointsY.Length;
+            int [,] trafficLights = new int[totalCombinations, 2];
+
+            int index = 0;
+
+            for (int i = 0; i < interestPointsX.Length; i++)
+            {
+                for (int j = 0; j < interestPointsY.Length; j++)
+                {
+                    trafficLights[index, 0] = interestPointsX[i];
+                    trafficLights[index, 1] = interestPointsY[j];
+                    index++;
+                }
+            }
+           
+
+            for(int i=0;i<totalCombinations; i++)
+            {
+                if(Array.IndexOf(Utils.interestPointsY, trafficLights[i, 1]) % 2 == 0)
+                {
+                    if (trafficLights[i, 0]+1< gridLength)
+                    {
+                        int[] combination = {trafficLights[i, 0] + 1,trafficLights[i, 1] };
+                        trafficLightsPos.Add(combination);
+                    }
+                    
+                }
+                else
+                {
+                    if (trafficLights[i, 0] -1 > 0)
+                    {
+                        int[] combination1 = { trafficLights[i, 0] - 1,trafficLights[i, 1] };
+                        trafficLightsPos.Add(combination1);
+                    }
+                        
+                    int[] combination2 = {trafficLights[i, 0], trafficLights[i, 1]+1 };
+                    trafficLightsPos.Add(combination2);
+                }
+            }
+
+        }
         public static void ParseMessage(string content, out string action, out string parameters)
         {
             string[] t = content.Split();

@@ -38,7 +38,6 @@ namespace Project
 
                 case "move":
                     string direction = parameters;
-                    Console.Write(direction);
                     switch (direction)
                     {
                         case "up":
