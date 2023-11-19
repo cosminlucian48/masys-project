@@ -152,6 +152,7 @@ namespace Project
         public void HandleFinish()
         {
             Console.WriteLine($"[{Name}] Reached destination! I am going home.. zZz..");
+            Utils.noAgents -= 1;
             this.Stop();
         }
 

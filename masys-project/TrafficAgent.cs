@@ -93,15 +93,16 @@ namespace Project
                // TODO: check if there is space before spawning a new car
             int x, y;
             string[] t;
-            int[] possibleX = { };
+            int[] possibleX = Utils.interestPointsX;
 
             foreach (string k in Utils.CarPositions.Values)
             {
                 t = k.Split();
                 x = Convert.ToInt32(t[0]);
                 y = Convert.ToInt32(t[1]);
-                possibleX = Utils.interestPointsX;
-                if (y == Utils.gridLength - 1 && !(possibleX.Contains(x)))
+                
+                if (((y == Utils.gridLength - 1)||(y==Utils.gridLength-2)) 
+                    && possibleX.Contains(x))
                 {
                     possibleX = possibleX.Where(val => val != x).ToArray();
                 }
@@ -112,6 +113,7 @@ namespace Project
                 if (possibleX.Count() == 0)
                 {
                     Console.WriteLine($"[{Name}] Can not spawn any more vehicles now. Will spawn again at next cycle.");
+                    break;
                 }
                 else
                 {
