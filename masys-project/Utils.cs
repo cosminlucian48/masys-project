@@ -19,6 +19,10 @@ namespace Project
         //5 12 L --- 6 13 R
         public static List<int[]> trafficLightsPos = new List<int[]>();
 
+        public static Dictionary<string, string> CarPositions = new Dictionary<string, string>();
+        public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
+        public static Dictionary<string, string> TrafficLightPositions = new Dictionary<string, string>();
+
         public static int Delay = 500;
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;

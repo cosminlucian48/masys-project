@@ -92,7 +92,7 @@ namespace Project
 
             if (_ownerAgent != null)
             {
-                foreach (KeyValuePair<string, string> entry in _ownerAgent.CarPositions)
+                foreach (KeyValuePair<string, string> entry in Utils.CarPositions)
                 {
                     string[] t = entry.Value.Split();
                     int x = Convert.ToInt32(t[0]);
@@ -103,7 +103,7 @@ namespace Project
 
             }
 
-            foreach (KeyValuePair<string, string> entry in _ownerAgent.TrafficLightPositions)
+            foreach (KeyValuePair<string, string> entry in Utils.TrafficLightPositions)
             {
                 string[] t = entry.Key.Split();
                 int x = Convert.ToInt32(t[0]);

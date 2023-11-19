@@ -1,5 +1,6 @@
 ﻿using ActressMas;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Project
@@ -40,13 +41,13 @@ namespace Project
                     string direction = parameters;
                     switch (direction)
                     {
-                        case "up":
+                        case "Up":
                             _state = State.Up;
                             break;
-                        case "left":
+                        case "Left":
                             _state = State.Left;
                             break;
-                        case "right":
+                        case "Right":
                             _state = State.Right;
                             break;
                         default:
@@ -70,51 +71,43 @@ namespace Project
 
         public void HandleMove()
         {
-            // TODO: change direction based on states
-            // TODO: maybe, before updating position, check if target position is free or not
-            //      if position is not free, maybe put car agent on Waiting state, and maybe using a timer get it started again later
-            /*if (_state == State.Up)
+            if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color) && color == "Red")
             {
-                this.currentPos.y -= 1;
-            }*/
+                Send("traffic", "carwait");
+                return;
+            }
 
-            switch(_state)
+            Position intendedPosition = new Position(currentPos.x, currentPos.y);
+            switch (_state)
             {
                 case State.Up:
-                    this.currentPos.y -= 1;
+                    intendedPosition.y -= 1;
                     break;
                 case State.Left:
-                    this.currentPos.x -= 1;
+                    intendedPosition.x -= 1;
                     break;
                 case State.Right:
-                    this.currentPos.x += 1;
+                    intendedPosition.x += 1;
                     break;
                 default:
                     break;
             }
+
+            if (Utils.CarPositions.Values.Contains(intendedPosition.ToString())) // or TrafficLights.contains(position) and check also car direction if matches semaphor direction
+            {
+                Send("traffic", "carwait");
+                return;
+            }
+
+            this.currentPos.x = intendedPosition.x;
+            this.currentPos.y = intendedPosition.y;
 
             Send("traffic", Utils.Str("change", currentPos.ToString()));
         }
 
         public void HandleWait()
         {
-            //reverts last move since it was not approved by traffic
-            switch (_state)
-            {
-                case State.Up:
-                    this.currentPos.y += 1;
-                    break;
-                case State.Left:
-                    this.currentPos.x += 1;
-                    break;
-                case State.Right:
-                    this.currentPos.x -= 1;
-                    break;
-                default:
-                    break;
-            }
-            /*Thread.Sleep(Utils.Delay);*/
-            HandleMove();
+            Send(this.Name, Utils.Str("move",_state));
         }
 
         public void HandleFinish()
