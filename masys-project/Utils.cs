@@ -23,9 +23,11 @@ namespace Project
         public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
         public static Dictionary<string, string> TrafficLightPositions = new Dictionary<string, string>();
 
-        public static int Delay = 500;
+        public static int Delay = Convert.ToInt32(ConfigurationManager.AppSettings.Get("TurnDelay"));
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
+        public static int carsToGenerate = 3; // [0,4]
+        public static string logFocus = "car";
 
         public static void initializeTrafficLights()
         {

@@ -21,7 +21,7 @@ namespace Project
         {
             _timer = new System.Timers.Timer();
             _timer.Elapsed += t_Elapsed;
-            _timer.Interval = 10*(Utils.Delay+100);
+            _timer.Interval = Utils.CarGenerationRate*(Utils.Delay+100);
 
             Thread t = new Thread(new ThreadStart(GUIThread));
             t.Start();
@@ -48,8 +48,10 @@ namespace Project
 
         public override void Act(Message message)
         {
-            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
-
+            if (Utils.logFocus.Length>0 && message.Sender.Contains(Utils.logFocus)) //see only car loggs
+            {
+                Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            }
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
             
@@ -105,7 +107,7 @@ namespace Project
                 }
             }
 
-            for(int i=0;i<Utils.CarGenerationRate;i++)
+            for(int i=0;i<Utils.carsToGenerate;i++)
             {
                 if (possibleX.Count() == 0)
                 {
@@ -131,7 +133,7 @@ namespace Project
 
             Utils.CarPositions.Add(sender, $"{t[0]} {t[1]}");
             Utils.CarDestinations.Add(sender, $"{t[2]} {t[3]}");
-            Send(sender, Utils.Str("move", "up"));
+            Send(sender, Utils.Str("move", "Up"));
         }
 
         private void HandleLightPosition(string position)
@@ -149,9 +151,15 @@ namespace Project
 
         private void HandleChange(string sender, string position)
         {
+            //double check if position is filled already
+            if (Utils.CarPositions.Values.Contains(position))
+            {
+                Send(sender, "wait");
+                return;
+            }
             Utils.CarPositions[sender] = position;
 
-                //check if at finish
+             //check if at finish
             string[] t = position.Split();
             int actualX = Convert.ToInt32(t[0]);
             int actualY = Convert.ToInt32(t[1]);
@@ -165,6 +173,7 @@ namespace Project
                 Utils.CarPositions.Remove(sender);
                 Utils.CarDestinations.Remove(sender);
             }
+            //check direction
             else
             {
                 if(actualX == targetX || !Utils.interestPointsY.Contains(actualY))
