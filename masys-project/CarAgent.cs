@@ -1,23 +1,26 @@
 ﻿using ActressMas;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Project
 {
     public class CarAgent : Agent
     {
-        public Position currentPos, targetPos;
+        public Position currentPos, targetPos, intendedPosition;
         private enum State { Up, Left, Right };
-        
-        private State _state;
+
+        private State _intendedDirection;
+        private State _direction;
         public CarAgent(Position start, Position target) {
             this.currentPos = start;
             this.targetPos = target;
+            this.intendedPosition = new Position(-1, -1);
         }
 
         public override void Setup()
         {
-            _state = State.Up;
+            _direction = State.Up;
             Console.WriteLine($"[{Name}]: Starting!");
             Send("traffic", Utils.Str("position", currentPos.ToString(), targetPos.ToString()));
         }
@@ -37,23 +40,7 @@ namespace Project
                     break;
 
                 case "move":
-                    string direction = parameters;
-                    switch (direction)
-                    {
-                        case "up":
-                            _state = State.Up;
-                            break;
-                        case "left":
-                            _state = State.Left;
-                            break;
-                        case "right":
-                            _state = State.Right;
-                            break;
-                        default:
-                            _state = State.Up;
-                            break;
-                    }
-                    HandleMove();
+                    HandleMove(parameters);
                     break;
 
                 case "wait":
@@ -68,53 +55,101 @@ namespace Project
             }
         }
 
-        public void HandleMove()
+        public void HandleMove(string direction)
         {
-            // TODO: change direction based on states
-            // TODO: maybe, before updating position, check if target position is free or not
-            //      if position is not free, maybe put car agent on Waiting state, and maybe using a timer get it started again later
-            /*if (_state == State.Up)
+            //check direction
+            switch (direction)
             {
-                this.currentPos.y -= 1;
-            }*/
+                case "Up":
+                    _direction = State.Up;
+                    break;
+                case "Left":
+                    _direction = State.Left;
+                    break;
+                case "Right":
+                    _direction = State.Right;
+                    break;
+                default:
+                    _direction = State.Up;
+                    break;
+            }
 
-            switch(_state)
+            //update current position with intended position
+            if (this.intendedPosition.x != -1)
+            {
+                this.currentPos.x = this.intendedPosition.x;
+                this.currentPos.y = this.intendedPosition.y;
+            }
+
+            //TODO: here we should choose the direction based on the equation
+
+            //check if car is on a traffic light and if the light is -red-
+            if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color) && color == "Red")
+            {
+                //check car direction intention
+                int xAxisDifference = currentPos.x - targetPos.x;
+                if (xAxisDifference>1)
+                {
+                    _intendedDirection = State.Left;
+                }else if (xAxisDifference < -1)
+                {
+                    _intendedDirection = State.Right;
+                }
+                else
+                {
+                    _intendedDirection = State.Up;
+                }
+
+                //check if car has intermitent right green
+                if(!((this._direction == State.Up && _intendedDirection == State.Right) 
+                    || (this._direction == State.Left && _intendedDirection == State.Up))) 
+                {
+                    //to wait an entire turn
+                    Send("traffic", "carwait");
+
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine($"[{this.Name}] has intermitent green!");
+                }
+            }
+
+            //update intended position based on direction
+            intendedPosition = new Position(currentPos.x, currentPos.y);
+            switch (_direction)
             {
                 case State.Up:
-                    this.currentPos.y -= 1;
+                    intendedPosition.y -= 1;
                     break;
                 case State.Left:
-                    this.currentPos.x -= 1;
+                    intendedPosition.x -= 1;
                     break;
                 case State.Right:
-                    this.currentPos.x += 1;
+                    intendedPosition.x += 1;
                     break;
                 default:
                     break;
             }
 
-            Send("traffic", Utils.Str("change", currentPos.ToString()));
+            /*if (Utils.CarPositions.Values.Contains(intendedPosition.ToString())) //check also if car direction matches semaphor direction
+            {
+                //ask traffic monitor to send -wait- to this car
+                //if we send dirrecttly wait to this.name it will go in infinite loop
+                Send("traffic", "carwait");
+                return;
+            }*/
+
+            //try sending car to intended position
+            Send("traffic", Utils.Str("change", intendedPosition.ToString()));
         }
 
         public void HandleWait()
         {
-            //reverts last move since it was not approved by traffic
-            switch (_state)
-            {
-                case State.Up:
-                    this.currentPos.y += 1;
-                    break;
-                case State.Left:
-                    this.currentPos.x += 1;
-                    break;
-                case State.Right:
-                    this.currentPos.x -= 1;
-                    break;
-                default:
-                    break;
-            }
-            /*Thread.Sleep(Utils.Delay);*/
-            HandleMove();
+            //reset intendedPosition if the car has to wait, so that the actual position is not updated in HandleMove
+            this.intendedPosition.x = -1;
+            this.intendedPosition.y = -1;
+            Send(this.Name, Utils.Str("move",_direction));
         }
 
         public void HandleFinish()
@@ -122,7 +157,6 @@ namespace Project
             Console.WriteLine($"[{Name}] Reached destination! I am going home.. zZz..");
             this.Stop();
         }
-
 
     }
 }

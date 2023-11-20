@@ -11,6 +11,7 @@ namespace Project
         public static string TrafficLightIntelligence = ConfigurationManager.AppSettings.Get("TrafficLightIntelligence");
         public static int CarGenerationRate = Convert.ToInt32(ConfigurationManager.AppSettings.Get("CarGenerationRate"));
         public static string CarPrioritization = ConfigurationManager.AppSettings.Get("CarPrioritization");
+        public static int Delay = Convert.ToInt32(ConfigurationManager.AppSettings.Get("TurnDelay"));
         public static int gridLength = 19;
         public static int gridBlockSize = 20;
         public static int[] interestPointsX = { 0, 6, 12, 18 };
@@ -19,9 +20,14 @@ namespace Project
         //5 12 L --- 6 13 R
         public static List<int[]> trafficLightsPos = new List<int[]>();
 
-        public static int Delay = 500;
+        public static Dictionary<string, string> CarPositions = new Dictionary<string, string>();
+        public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
+        public static Dictionary<string, string> TrafficLightPositions = new Dictionary<string, string>();
+        
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
+        public static int carsToGenerate = 3; // [0,4]
+        public static string logFocus = "car";
 
         public static void initializeTrafficLights()
         {

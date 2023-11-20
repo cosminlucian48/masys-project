@@ -37,7 +37,10 @@ namespace Project
 
         public override void Act(Message message)
         {
-            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            if(Utils.logFocus.Length>0 && this.Name.Contains(Utils.logFocus))
+            {
+                Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            }
 
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);

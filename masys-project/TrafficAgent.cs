@@ -17,19 +17,12 @@ namespace Project
         private System.Timers.Timer _timer;
         private readonly object positionsLock = new object();
 
-        public Dictionary<string, string> CarPositions { get; set; }
-        public Dictionary<string, string> CarDestinations { get; set; }
-
-        public Dictionary<string, string> TrafficLightPositions { get; set; }
         public TrafficAgent()
         {
             _timer = new System.Timers.Timer();
             _timer.Elapsed += t_Elapsed;
-            _timer.Interval = 10*(Utils.Delay+100);
+            _timer.Interval = Utils.CarGenerationRate*(Utils.Delay+100);
 
-            CarPositions = new Dictionary<string, string>();
-            CarDestinations = new Dictionary<string, string>();
-            TrafficLightPositions = new Dictionary<string, string>();
             Thread t = new Thread(new ThreadStart(GUIThread));
             t.Start();
         }
@@ -55,8 +48,10 @@ namespace Project
 
         public override void Act(Message message)
         {
-            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
-
+            if (Utils.logFocus.Length>0 && message.Sender.Contains(Utils.logFocus)) //see only car loggs
+            {
+                Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            }
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
             
@@ -79,6 +74,9 @@ namespace Project
                 case "lightchange":
                     HandleLightChange(parameters); 
                     break;
+                case "carwait":
+                    Send(message.Sender,"wait");
+                    break;
                 default:
                     break;
             }
@@ -92,28 +90,29 @@ namespace Project
 
         private void HandleSpawn()
         {
-               // TODO: check if there is space before spawning a new car
             int x, y;
             string[] t;
-            int[] possibleX = { };
+            int[] possibleX = Utils.interestPointsX;
 
-            foreach (string k in CarPositions.Values)
+            foreach (string k in Utils.CarPositions.Values)
             {
                 t = k.Split();
                 x = Convert.ToInt32(t[0]);
                 y = Convert.ToInt32(t[1]);
-                possibleX = Utils.interestPointsX;
-                if (y == Utils.gridLength - 1 && !(possibleX.Contains(x)))
+                
+                if (((y == Utils.gridLength - 1)||(y==Utils.gridLength-2)) 
+                    && possibleX.Contains(x))
                 {
                     possibleX = possibleX.Where(val => val != x).ToArray();
                 }
             }
 
-            for(int i=0;i<Utils.CarGenerationRate;i++)
+            for(int i=0;i<Utils.carsToGenerate;i++)
             {
                 if (possibleX.Count() == 0)
                 {
                     Console.WriteLine($"[{Name}] Can not spawn any more vehicles now. Will spawn again at next cycle.");
+                    break;
                 }
                 else
                 {
@@ -133,74 +132,70 @@ namespace Project
         {
             string[] t = positions.Split();
 
-            CarPositions.Add(sender, $"{t[0]} {t[1]}");
-            CarDestinations.Add(sender, $"{t[2]} {t[3]}");
-            Send(sender, Utils.Str("move", "up"));
+            Utils.CarPositions.Add(sender, $"{t[0]} {t[1]}");
+            Utils.CarDestinations.Add(sender, $"{t[2]} {t[3]}");
+            Send(sender, Utils.Str("move", "Up"));
         }
 
         private void HandleLightPosition(string position)
         {
             string[] t = position.Split();
-            TrafficLightPositions.Add($"{t[0]} {t[1]}", "Green");
+            Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", "Green");
         }
 
         private void HandleLightChange(string parameters)
         {
             string[] t = parameters.Split();
-            TrafficLightPositions[$"{t[0]} {t[1]}"] = t[2];
+            Utils.TrafficLightPositions[$"{t[0]} {t[1]}"] = t[2];
         }
         
 
         private void HandleChange(string sender, string position)
         {
-            if (CarPositions.Values.Contains(position) && CarPositions.TryGetValue(sender, out string pos) && pos!=position) // or TrafficLights.contains(position) and check also car direction if matches semaphor direction
+            //double check if position is filled already
+            if (Utils.CarPositions.Values.Contains(position))
             {
                 Send(sender, "wait");
                 return;
             }
-            CarPositions[sender] = position;
+            Utils.CarPositions[sender] = position;
 
-            if (TrafficLightPositions.TryGetValue(position, out string color) && color == "Red")
-            {
-                Send(sender, "wait");
-                return;
-            }
-
-                //check if at finish
+             //check if at finish
             string[] t = position.Split();
             int actualX = Convert.ToInt32(t[0]);
             int actualY = Convert.ToInt32(t[1]);
 
-            t = CarDestinations[sender].Split();
+            t = Utils.CarDestinations[sender].Split();
             int targetX = Convert.ToInt32(t[0]);
             int targetY = Convert.ToInt32(t[1]);
             if (actualX == targetX && actualY == targetY)
             {
                 Send(sender, "finish");
-                CarPositions.Remove(sender);
-                CarDestinations.Remove(sender);
+                Utils.CarPositions.Remove(sender);
+                Utils.CarDestinations.Remove(sender);
             }
+            //check direction
             else
             {
                 if(actualX == targetX || !Utils.interestPointsY.Contains(actualY))
                 {
-                    Send(sender, Utils.Str("move", "up"));
+                    Send(sender, Utils.Str("move", "Up"));
                 }
                 else
                 //cost
                 {
                     if(Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
                     {
-                        Send(sender, Utils.Str("move", "left"));
+                        Send(sender, Utils.Str("move", "Left"));
                     }
                     else
                     {
                         if(actualX < targetX)
                         {
-                            Send(sender, Utils.Str("move", "right"));
+                            Send(sender, Utils.Str("move", "Right"));
                         }
                         // so that it can get on the left direction road. It has to go one more square UP
-                        else Send(sender, Utils.Str("move", "up"));
+                        else Send(sender, Utils.Str("move", "Up"));
                     }
                 }
             }
