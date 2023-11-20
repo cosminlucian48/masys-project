@@ -90,7 +90,6 @@ namespace Project
 
         private void HandleSpawn()
         {
-               // TODO: check if there is space before spawning a new car
             int x, y;
             string[] t;
             int[] possibleX = Utils.interestPointsX;

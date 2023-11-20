@@ -81,11 +81,12 @@ namespace Project
                 this.currentPos.y = this.intendedPosition.y;
             }
 
+            //TODO: here we should choose the direction based on the equation
+
             //check if car is on a traffic light and if the light is -red-
             if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color) && color == "Red")
             {
                 //check car direction intention
-                //TODO: here we should choose the direction based on the equation
                 int xAxisDifference = currentPos.x - targetPos.x;
                 if (xAxisDifference>1)
                 {
@@ -103,7 +104,9 @@ namespace Project
                 if(!((this._direction == State.Up && _intendedDirection == State.Right) 
                     || (this._direction == State.Left && _intendedDirection == State.Up))) 
                 {
+                    //to wait an entire turn
                     Send("traffic", "carwait");
+
                     return;
                 }
                 else
@@ -112,7 +115,7 @@ namespace Project
                 }
             }
 
-            //updated intended position based on direction
+            //update intended position based on direction
             intendedPosition = new Position(currentPos.x, currentPos.y);
             switch (_direction)
             {
@@ -129,13 +132,13 @@ namespace Project
                     break;
             }
 
-            if (Utils.CarPositions.Values.Contains(intendedPosition.ToString())) //check also if car direction matches semaphor direction
+            /*if (Utils.CarPositions.Values.Contains(intendedPosition.ToString())) //check also if car direction matches semaphor direction
             {
                 //ask traffic monitor to send -wait- to this car
                 //if we send dirrecttly wait to this.name it will go in infinite loop
                 Send("traffic", "carwait");
                 return;
-            }
+            }*/
 
             //try sending car to intended position
             Send("traffic", Utils.Str("change", intendedPosition.ToString()));
