@@ -21,7 +21,7 @@ namespace Project
         {
             _timer = new System.Timers.Timer();
             _timer.Elapsed += t_Elapsed;
-            _timer.Interval = Utils.CarGenerationRate*(Utils.Delay+100);
+            _timer.Interval = Utils.CarGenerationRate * (Utils.Delay + 100);
 
             Thread t = new Thread(new ThreadStart(GUIThread));
             t.Start();
@@ -48,13 +48,13 @@ namespace Project
 
         public override void Act(Message message)
         {
-            if (Utils.logFocus.Length>0 && message.Sender.Contains(Utils.logFocus)) //see only car loggs
+            if (Utils.logFocus.Length > 0 && message.Sender.Contains(Utils.logFocus)) //see only car loggs
             {
                 Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
             }
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
-            
+
 
             switch (action)
             {
@@ -72,10 +72,10 @@ namespace Project
                     HandleLightPosition(parameters);
                     break;
                 case "lightchange":
-                    HandleLightChange(parameters); 
+                    HandleLightChange(parameters);
                     break;
                 case "carwait":
-                    Send(message.Sender,"wait");
+                    Send(message.Sender, "wait");
                     break;
                 default:
                     break;
@@ -99,15 +99,15 @@ namespace Project
                 t = k.Split();
                 x = Convert.ToInt32(t[0]);
                 y = Convert.ToInt32(t[1]);
-                
-                if (((y == Utils.gridLength - 1)||(y==Utils.gridLength-2)) 
+
+                if (((y == Utils.gridLength - 1) || (y == Utils.gridLength - 2))
                     && possibleX.Contains(x))
                 {
                     possibleX = possibleX.Where(val => val != x).ToArray();
                 }
             }
 
-            for(int i=0;i<Utils.carsToGenerate;i++)
+            for (int i = 0; i < Utils.carsToGenerate; i++)
             {
                 if (possibleX.Count() == 0)
                 {
@@ -124,9 +124,9 @@ namespace Project
                     Utils.noAgents += 1;
                     this.Environment.Add(carAgent, string.Format("car{0:D2}", Utils.noAgents));
                 }
-                
+
             }
-            
+
         }
         private void HandlePosition(string sender, string positions)
         {
@@ -148,7 +148,7 @@ namespace Project
             string[] t = parameters.Split();
             Utils.TrafficLightPositions[$"{t[0]} {t[1]}"] = t[2];
         }
-        
+
 
         private void HandleChange(string sender, string position)
         {
@@ -160,7 +160,7 @@ namespace Project
             }
             Utils.CarPositions[sender] = position;
 
-             //check if at finish
+            //check if at finish
             string[] t = position.Split();
             int actualX = Convert.ToInt32(t[0]);
             int actualY = Convert.ToInt32(t[1]);
@@ -177,20 +177,20 @@ namespace Project
             //check direction
             else
             {
-                if(actualX == targetX || !Utils.interestPointsY.Contains(actualY))
+                if (actualX == targetX || !Utils.interestPointsY.Contains(actualY))
                 {
                     Send(sender, Utils.Str("move", "Up"));
                 }
                 else
                 //cost
                 {
-                    if(Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
+                    if (Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
                     {
                         Send(sender, Utils.Str("move", "Left"));
                     }
                     else
                     {
-                        if(actualX < targetX)
+                        if (actualX < targetX)
                         {
                             Send(sender, Utils.Str("move", "Right"));
                         }
@@ -199,7 +199,7 @@ namespace Project
                     }
                 }
             }
-            
+
         }
 
     }
