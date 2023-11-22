@@ -2,7 +2,7 @@
 {
     public class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             var env = new ActressMas.EnvironmentMas(0, Utils.Delay);
             for (int i = 0; i < 4; i++)

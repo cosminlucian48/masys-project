@@ -13,7 +13,6 @@ namespace Project
         public static string CarPrioritization = ConfigurationManager.AppSettings.Get("CarPrioritization");
         public static int Delay = Convert.ToInt32(ConfigurationManager.AppSettings.Get("TurnDelay"));
         public static int gridLength = 19;
-        public static int gridBlockSize = 20;
         public static int[] interestPointsX = { 0, 6, 12, 18 };
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
         public static int[] interestPointsY = { 5, 6, 12, 13 };
@@ -23,7 +22,7 @@ namespace Project
         public static Dictionary<string, string> CarPositions = new Dictionary<string, string>();
         public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
         public static Dictionary<string, string> TrafficLightPositions = new Dictionary<string, string>();
-        
+
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
         public static int carsToGenerate = 3; // [0,4]
@@ -32,7 +31,7 @@ namespace Project
         public static void initializeTrafficLights()
         {
             int totalCombinations = interestPointsX.Length * interestPointsY.Length;
-            int [,] trafficLights = new int[totalCombinations, 2];
+            int[,] trafficLights = new int[totalCombinations, 2];
 
             int index = 0;
 
@@ -45,28 +44,28 @@ namespace Project
                     index++;
                 }
             }
-           
 
-            for(int i=0;i<totalCombinations; i++)
+
+            for (int i = 0; i < totalCombinations; i++)
             {
-                if(Array.IndexOf(Utils.interestPointsY, trafficLights[i, 1]) % 2 == 0)
+                if (Array.IndexOf(Utils.interestPointsY, trafficLights[i, 1]) % 2 == 0)
                 {
-                    if (trafficLights[i, 0]+1< gridLength)
+                    if (trafficLights[i, 0] + 1 < gridLength)
                     {
-                        int[] combination = {trafficLights[i, 0] + 1,trafficLights[i, 1] };
+                        int[] combination = { trafficLights[i, 0] + 1, trafficLights[i, 1] };
                         trafficLightsPos.Add(combination);
                     }
-                    
+
                 }
                 else
                 {
-                    if (trafficLights[i, 0] -1 > 0)
+                    if (trafficLights[i, 0] - 1 > 0)
                     {
-                        int[] combination1 = { trafficLights[i, 0] - 1,trafficLights[i, 1] };
+                        int[] combination1 = { trafficLights[i, 0] - 1, trafficLights[i, 1] };
                         trafficLightsPos.Add(combination1);
                     }
-                        
-                    int[] combination2 = {trafficLights[i, 0], trafficLights[i, 1]+1 };
+
+                    int[] combination2 = { trafficLights[i, 0], trafficLights[i, 1] + 1 };
                     trafficLightsPos.Add(combination2);
                 }
             }

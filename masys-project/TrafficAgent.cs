@@ -134,7 +134,7 @@ namespace Project
 
             Utils.CarPositions.Add(sender, $"{t[0]} {t[1]}");
             Utils.CarDestinations.Add(sender, $"{t[2]} {t[3]}");
-            Send(sender, Utils.Str("move", "Up"));
+            Send(sender, "move");
         }
 
         private void HandleLightPosition(string position)
@@ -177,27 +177,7 @@ namespace Project
             //check direction
             else
             {
-                if (actualX == targetX || !Utils.interestPointsY.Contains(actualY))
-                {
-                    Send(sender, Utils.Str("move", "Up"));
-                }
-                else
-                //cost
-                {
-                    if (Array.IndexOf(Utils.interestPointsY, actualY) % 2 == 0)
-                    {
-                        Send(sender, Utils.Str("move", "Left"));
-                    }
-                    else
-                    {
-                        if (actualX < targetX)
-                        {
-                            Send(sender, Utils.Str("move", "Right"));
-                        }
-                        // so that it can get on the left direction road. It has to go one more square UP
-                        else Send(sender, Utils.Str("move", "Up"));
-                    }
-                }
+                Send(sender, "move");
             }
 
         }
