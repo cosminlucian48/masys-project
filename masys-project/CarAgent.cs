@@ -38,10 +38,6 @@ namespace Project
 
             switch (action)
             {
-                case "hello":
-                    Send("trafficlight", "hello");
-                    break;
-
                 case "move":
                     HandleMove();
                     break;
@@ -53,6 +49,7 @@ namespace Project
                 case "finish":
                     HandleFinish();
                     break;
+
                 default:
                     break;
             }
@@ -68,6 +65,7 @@ namespace Project
             }
             _direction = State.Up;
 
+            //TODO, here if the car is on X traffic light, it wont get an optimal direction
             //check direction
             if (!(currentPos.x == targetPos.x) && Utils.interestPointsY.Contains(currentPos.y))
             {
@@ -126,14 +124,14 @@ namespace Project
             {
                 if (Utils.interestPointsY[3] == currentPos.y || Utils.interestPointsY[2] == currentPos.y || Utils.interestPointsY[3] + 1 == currentPos.y)
                 {
-                    _optimalDirection = chooseFavorableSegment();
+                    _optimalDirection = chooseFavorableSegment(currentPos.x, currentPos.y);
                 }
 
                 if (color == "Red")
                 {
                     //check if car has intermitent right green
-                    if (!((this._direction == State.Up && _intendedDirection == State.Right)
-                        || (this._direction == State.Left && _intendedDirection == State.Up)))
+                    if (!((this._direction == State.Up && _optimalDirection == State.Right)
+                        || (this._direction == State.Left && _optimalDirection == State.Up)))
                     {
                         //to wait an entire turn
                         Send("traffic", "carwait");
@@ -190,59 +188,86 @@ namespace Project
             this.Stop();
         }
 
-        private (State, int) getUpperSegmentCost()
+        private (State, int) getUpperSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
-            for (int y = currentPos.y - 3; y >= currentPos.y - 2 - 5; y--)
+            int yDifference = 0, xDifference = 0;
+            if (Utils.interestPointsX.Contains(coordsX)) yDifference = 3;
+            else if (Utils.interestPointsX.Contains(coordsX + 1)) { yDifference = 2; xDifference = -1; }
+            else if (Utils.interestPointsX.Contains(coordsX - 1)) { yDifference = 1; xDifference = 1; }
+
+
+            for (int y = coordsY - yDifference; y > Utils.interestPointsY[1]; y -= 1)
             {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(currentPos.x, y)))
+                if (Utils.CarPositions.Values.Contains(Utils.Str(coordsX - xDifference, y)))
                 {
                     noCars++;
                 }
             }
-            return (State.Up, 25 / 5 - noCars);
+            Console.WriteLine($"[{coordsX}, {coordsY}] UP checking y [{coordsY - yDifference}, {Utils.interestPointsY[1]}) on x {coordsX - xDifference}");
+            return (State.Up, 25 / (5 - noCars));
         }
 
-        private (State, int) getLeftSegmentCost()
+        private (State, int) getLeftSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
-            for (int x = currentPos.x - 1; x >= currentPos.x - 1 - 5; x--)
+            int yDifference = 0, xDifference = 0;
+            if (Utils.interestPointsY.Contains(coordsY - 2)) { yDifference = 2; }
+            else if (Utils.interestPointsY.Contains(coordsY)) { xDifference = 1; }
+
+            int leftXStreet = Array.IndexOf(Utils.interestPointsX, coordsX - xDifference) - 1;
+
+            for (int x = coordsX - xDifference - 1; x > Utils.interestPointsX[leftXStreet]; x--)
             {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(x, currentPos.y - 2)))
+                if (Utils.CarPositions.Values.Contains(Utils.Str(x, coordsY - yDifference)))
                 {
                     noCars++;
                 }
             }
+
+            Console.WriteLine($"[{coordsX}, {coordsY}] LEFT checking x [{coordsX - xDifference - 1}, {Utils.interestPointsX[leftXStreet]}) on y {coordsY - yDifference}");
             return (State.Left, 25 / 5 - noCars);
         }
 
-        private (State, int) getRightSegmentCost()
+        private (State, int) getRightSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
-            for (int x = currentPos.x + 1; x <= currentPos.x + 1 + 5; x++)
+            int yDifference = 0, xDifference = 0;
+            if (Utils.interestPointsY.Contains(coordsY)) { xDifference = -1; }
+            else if  (Utils.interestPointsY.Contains(coordsY - 1)) { yDifference = 1; }
+
+            int rightXStreet = Array.IndexOf(Utils.interestPointsX, coordsX - xDifference) + 1;
+            for (int x = coordsX - xDifference + 1; x < Utils.interestPointsX[rightXStreet]; x++)
             {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(x, currentPos.y - 1)))
+                if (Utils.CarPositions.Values.Contains(Utils.Str(x, coordsY - yDifference)))
                 {
                     noCars++;
                 }
             }
-            return (State.Right, 25 / 5 - noCars);
+
+            Console.WriteLine($"[{coordsX}, {coordsY}] RIGHT checking x [{coordsX - xDifference + 1}, {Utils.interestPointsX[rightXStreet]}) on y {coordsY - yDifference}");
+
+            return (State.Left, 25 / 5 - noCars);
         }
 
-        private State chooseFavorableSegment()
+        private State chooseFavorableSegment(int coordsX, int coordsY)
         {
             //choose the segment to follow with the lowest cost if on first intersection
             List<(State, int)> segmentCosts = new List<(State, int)>
             {
-                getUpperSegmentCost()
+                getUpperSegmentCost(coordsX, coordsY)
             };
-            if (_intendedDirection == State.Left) { segmentCosts.Add(getLeftSegmentCost()); }
-            if (_intendedDirection == State.Right) { segmentCosts.Add(getRightSegmentCost()); }
+
+            if (_intendedDirection == State.Left) { segmentCosts.Add(getLeftSegmentCost(coordsX, coordsY)); }
+            if (_intendedDirection == State.Right) { segmentCosts.Add(getRightSegmentCost(coordsX, coordsY)); }
+
             segmentCosts.Sort((a, b) => -1 * a.Item2.CompareTo(b.Item2));
+
             Console.WriteLine($"[{Name}] chose as my optimal direction the following segment: {segmentCosts[0].Item1}");
+
             for (int i = 0; i < segmentCosts.Count; i++)
             {
-                Console.WriteLine($"[{segmentCosts[i].Item1}] with cost: {segmentCosts[i].Item2}");
+                Console.WriteLine($"[{Name}][{segmentCosts[i].Item1}] with cost: {segmentCosts[i].Item2}");
             }
             return segmentCosts[0].Item1;
         }

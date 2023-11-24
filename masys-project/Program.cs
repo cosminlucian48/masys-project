@@ -18,6 +18,22 @@
             for (int i = 0; i < Utils.trafficLightsPos.Count; i++)
             {
                 var trafficLightAgent = new TrafficLightAgent(new Position(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]));
+                /*if (Utils.trafficLightsPos[i][1] > 7)
+                {
+                    Utils.getUpperSegmentCost(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]);
+                }*/
+
+                /*if (Utils.trafficLightsPos[i][0] > 2 && Utils.trafficLightsPos[i][1] > 7 && Utils.trafficLightsPos[i][1] != Utils.interestPointsY[3])
+                {
+                    Utils.getLeftSegmentCost(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]);
+                }*/
+
+                /*if (Utils.trafficLightsPos[i][0] <17 && Utils.trafficLightsPos[i][1] > 7 && Utils.trafficLightsPos[i][1] != Utils.interestPointsY[2])
+                {
+                    Utils.getRightSegmentCost(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]);
+                }*/
+
+
                 env.Add(trafficLightAgent, string.Format("light{0:D2}", i));
             }
 
