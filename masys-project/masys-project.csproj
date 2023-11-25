@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CarOutOfBoundsException.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="TrafficAgent.cs" />
     <Compile Include="TrafficForm.cs">

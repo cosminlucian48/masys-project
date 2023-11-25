@@ -14,10 +14,12 @@
             }
 
             Utils.initializeTrafficLights();
-            //for el in trafficLights2, if x=0 numa 2 dir, if x=18 numa 2 dir
+            
             for (int i = 0; i < Utils.trafficLightsPos.Count; i++)
             {
                 var trafficLightAgent = new TrafficLightAgent(new Position(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]));
+                
+                //keeping this for testing purposes
                 /*if (Utils.trafficLightsPos[i][1] > 7)
                 {
                     Utils.getUpperSegmentCost(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]);
@@ -36,6 +38,14 @@
 
                 env.Add(trafficLightAgent, string.Format("light{0:D2}", i));
             }
+
+            //keeping this for testing purposes
+            /*Utils.CarPositions.Add("test1", "6 11");
+            Utils.CarPositions.Add("test2", "6 10");
+            Utils.CarPositions.Add("test3", "6 9");
+            Utils.CarPositions.Add("test4", "6 8");
+            Utils.CarPositions.Add("test5", "6 7");*/
+
 
             var trafficAgent = new TrafficAgent();
             env.Add(trafficAgent, "traffic");

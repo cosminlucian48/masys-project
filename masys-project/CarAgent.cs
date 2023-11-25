@@ -24,7 +24,7 @@ namespace Project
         {
             _optimalDirection = null;
             _direction = State.Up;
-            Console.WriteLine($"[{Name}]: Starting!");
+            Console.WriteLine($"[{Name}]: Starting! with target pos=[{this.targetPos.x} {this.targetPos.y}]");
             Send("traffic", Utils.Str("position", currentPos.ToString(), targetPos.ToString()));
         }
 
@@ -63,85 +63,71 @@ namespace Project
                 this.currentPos.x = this.intendedPosition.x;
                 this.currentPos.y = this.intendedPosition.y;
             }
+
+            //check if car is on traffic light
+            if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color))
+            {
+                //check car intention; basically if it is already in targetX/targetX-1/targetX+1 it will go UP, and if not it will consider also LEFT/RIGHT
+                int xAxisDifference = currentPos.x - targetPos.x;
+                if (xAxisDifference < -1)
+                {
+                    _intendedDirection = State.Right;
+                }
+                else if (xAxisDifference > 1)
+                {
+                    _intendedDirection = State.Left;
+                }
+                else
+                {
+                    _intendedDirection = State.Up;
+                }
+                
+                //check optimal direction, based on traffic, only when on first Y streets 
+                if (Utils.interestPointsY[3] == currentPos.y || Utils.interestPointsY[2] == currentPos.y || Utils.interestPointsY[3] + 1 == currentPos.y)
+                {
+                    _optimalDirection = chooseFavorableSegment(currentPos.x, currentPos.y);
+                }
+                else
+                {
+                    _optimalDirection = _intendedDirection;
+                }
+            }
+
             _direction = State.Up;
 
-            //TODO, here if the car is on X traffic light, it wont get an optimal direction
-            //check direction
-            if (!(currentPos.x == targetPos.x) && Utils.interestPointsY.Contains(currentPos.y))
+            //decide car direction
+            if (currentPos.x != targetPos.x && Utils.interestPointsY.Contains(currentPos.y))
             {
                 if (Array.IndexOf(Utils.interestPointsY, currentPos.y) % 2 == 0)
                 {
-                    //move left
-                    if (_optimalDirection != null)
-                    {
-                        _direction = (State)_optimalDirection;
-                        _optimalDirection = null;
-                    }
-                    else _direction = State.Left;
+                    _direction = Utils.interestPointsX.Contains(currentPos.x) ? (State)_optimalDirection : State.Left;
+
                 }
                 else
                 {
                     if (currentPos.x < targetPos.x)
                     {
-                        //TODO: finish here (dont delete optimal direction right away)
-                        //move right
-                        if (_optimalDirection != null)
-                        {
-                            if (_optimalDirection == State.Right)
-                            {
-                                _direction = (State)_optimalDirection;
-                                _optimalDirection = null;
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                        else _direction = State.Right;
+                        _direction = Utils.interestPointsX.Contains(currentPos.x) ? (State)_optimalDirection : State.Right;
                     }
+                    // if currentPosX>targetPosX then car to go to the left road. And for this to happen it has to go one more square UP
                 }
             }
 
-            //check car direction intention
-            int xAxisDifference = currentPos.x - targetPos.x;
-            if (xAxisDifference > 1)
+            //if traffic light is red
+            if (color == "Red")
             {
-                _intendedDirection = State.Left;
-            }
-            else if (xAxisDifference < -1)
-            {
-                _intendedDirection = State.Right;
-            }
-            else
-            {
-                _intendedDirection = State.Up;
-            }
-
-            //TODO: here we should choose the direction based on the equation
-
-            //check if car is on a traffic light and if the light is -red-
-            if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color))
-            {
-                if (Utils.interestPointsY[3] == currentPos.y || Utils.interestPointsY[2] == currentPos.y || Utils.interestPointsY[3] + 1 == currentPos.y)
+                //check if car has intermitent right green
+                if (!((this._direction == State.Up && _optimalDirection == State.Right)
+                    || (this._direction == State.Left && _optimalDirection == State.Up)))
                 {
-                    _optimalDirection = chooseFavorableSegment(currentPos.x, currentPos.y);
+                    //to wait an entire turn
+                    Send("traffic", "carwait");
+
+                    return;
                 }
-
-                if (color == "Red")
+                else
                 {
-                    //check if car has intermitent right green
-                    if (!((this._direction == State.Up && _optimalDirection == State.Right)
-                        || (this._direction == State.Left && _optimalDirection == State.Up)))
-                    {
-                        //to wait an entire turn
-                        Send("traffic", "carwait");
-
-                        return;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"[{this.Name}] has intermitent green!");
-                    }
+                    Console.WriteLine($"[{this.Name}] has intermitent green!");
                 }
             }
 
@@ -161,14 +147,12 @@ namespace Project
                 default:
                     break;
             }
-
-            /*if (Utils.CarPositions.Values.Contains(intendedPosition.ToString())) //check also if car direction matches semaphor direction
+            if(intendedPosition.x < 0 || intendedPosition.y < 0 || (!Utils.interestPointsX.Contains(intendedPosition.x) && !Utils.interestPointsY.Contains(intendedPosition.y)))
             {
-                //ask traffic monitor to send -wait- to this car
-                //if we send dirrecttly wait to this.name it will go in infinite loop
-                Send("traffic", "carwait");
-                return;
-            }*/
+                Console.WriteLine("--------------------------------------------------------------------------");
+                Console.WriteLine($"[{this.Name} out of bounds: [{intendedPosition.x},{intendedPosition.y}]]");
+                throw new CarOutOfBounds($"Car '{this.Name}' is out of bounds at position: [{intendedPosition.x},{intendedPosition.y}]");
+            }
 
             //try sending car to intended position
             Send("traffic", Utils.Str("change", intendedPosition.ToString()));
@@ -188,7 +172,7 @@ namespace Project
             this.Stop();
         }
 
-        private (State, int) getUpperSegmentCost(int coordsX, int coordsY)
+        private (State, double) getUpperSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
             int yDifference = 0, xDifference = 0;
@@ -204,11 +188,11 @@ namespace Project
                     noCars++;
                 }
             }
-            Console.WriteLine($"[{coordsX}, {coordsY}] UP checking y [{coordsY - yDifference}, {Utils.interestPointsY[1]}) on x {coordsX - xDifference}");
-            return (State.Up, 25 / (5 - noCars));
+            //Console.WriteLine($"[{coordsX}, {coordsY}] UP checking y [{coordsY - yDifference}, {Utils.interestPointsY[1]}) on x {coordsX - xDifference}");
+            return (State.Up, 25 / (5 - (double)noCars));
         }
 
-        private (State, int) getLeftSegmentCost(int coordsX, int coordsY)
+        private (State, double) getLeftSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
             int yDifference = 0, xDifference = 0;
@@ -225,11 +209,11 @@ namespace Project
                 }
             }
 
-            Console.WriteLine($"[{coordsX}, {coordsY}] LEFT checking x [{coordsX - xDifference - 1}, {Utils.interestPointsX[leftXStreet]}) on y {coordsY - yDifference}");
-            return (State.Left, 25 / 5 - noCars);
+            //Console.WriteLine($"[{coordsX}, {coordsY}] LEFT checking x [{coordsX - xDifference - 1}, {Utils.interestPointsX[leftXStreet]}) on y {coordsY - yDifference}");
+            return (State.Left, 25 / (5 - (double)noCars));
         }
 
-        private (State, int) getRightSegmentCost(int coordsX, int coordsY)
+        private (State, double) getRightSegmentCost(int coordsX, int coordsY)
         {
             int noCars = 0;
             int yDifference = 0, xDifference = 0;
@@ -245,15 +229,15 @@ namespace Project
                 }
             }
 
-            Console.WriteLine($"[{coordsX}, {coordsY}] RIGHT checking x [{coordsX - xDifference + 1}, {Utils.interestPointsX[rightXStreet]}) on y {coordsY - yDifference}");
+            //Console.WriteLine($"[{coordsX}, {coordsY}] RIGHT checking x [{coordsX - xDifference + 1}, {Utils.interestPointsX[rightXStreet]}) on y {coordsY - yDifference}");
 
-            return (State.Left, 25 / 5 - noCars);
+            return (State.Right, 25 / (5 - (double)noCars));
         }
 
         private State chooseFavorableSegment(int coordsX, int coordsY)
         {
             //choose the segment to follow with the lowest cost if on first intersection
-            List<(State, int)> segmentCosts = new List<(State, int)>
+            List<(State, double)> segmentCosts = new List<(State, double)>
             {
                 getUpperSegmentCost(coordsX, coordsY)
             };
@@ -261,14 +245,10 @@ namespace Project
             if (_intendedDirection == State.Left) { segmentCosts.Add(getLeftSegmentCost(coordsX, coordsY)); }
             if (_intendedDirection == State.Right) { segmentCosts.Add(getRightSegmentCost(coordsX, coordsY)); }
 
-            segmentCosts.Sort((a, b) => -1 * a.Item2.CompareTo(b.Item2));
+            segmentCosts.Sort((a, b) => a.Item2.CompareTo(b.Item2));
 
-            Console.WriteLine($"[{Name}] chose as my optimal direction the following segment: {segmentCosts[0].Item1}");
-
-            for (int i = 0; i < segmentCosts.Count; i++)
-            {
-                Console.WriteLine($"[{Name}][{segmentCosts[i].Item1}] with cost: {segmentCosts[i].Item2}");
-            }
+            Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
+                  string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));
             return segmentCosts[0].Item1;
         }
 

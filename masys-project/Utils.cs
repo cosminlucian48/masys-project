@@ -29,6 +29,7 @@ namespace Project
         public static int noAgents = 0;
         public static int carsToGenerate = 3; // [0,4]
         public static string logFocus = "car";
+        public static bool verboseLogs = true;
 
         public static void initializeTrafficLights()
         {
@@ -98,67 +99,5 @@ namespace Project
         {
             return string.Format("{0} {1} {2}", p1, p2, p3);
         }
-
-       /*public static void getUpperSegmentCost(int coordsX, int coordsY)
-        {
-            int noCars = 0;
-            int yDifference = 0, xDifference = 0;
-            if (Utils.interestPointsX.Contains(coordsX)) yDifference = 3;
-            else if (Utils.interestPointsX.Contains(coordsX + 1)) { yDifference = 2; xDifference = -1; }
-            else if (Utils.interestPointsX.Contains(coordsX - 1)) { yDifference = 1; xDifference = 1; }
-
-
-            for (int y = coordsY - yDifference; y > Utils.interestPointsY[1]; y -= 1)
-            {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(coordsX - xDifference, y)))
-                {
-                    noCars++;
-                }
-            }
-            Console.WriteLine($"[{coordsX}, {coordsY}] UP checking y [{coordsY - yDifference}, {Utils.interestPointsY[1]}) on x {coordsX - xDifference}");
-            *//*return (State.Up, 25 / (5 - noCars));*//*
-        }
-
-        public static void getLeftSegmentCost(int coordsX, int coordsY)
-        {
-            int noCars = 0;
-            int yDifference = 0, xDifference = 0;
-            if (Utils.interestPointsY.Contains(coordsY - 2)) { yDifference = 2; }
-            else if (Utils.interestPointsY.Contains(coordsY)) { xDifference = 1; }
-
-            int leftXStreet = Array.IndexOf(Utils.interestPointsX, coordsX - xDifference) - 1;
-
-            for (int x = coordsX - xDifference - 1; x > Utils.interestPointsX[leftXStreet]; x--)
-            {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(x, coordsY - yDifference)))
-                {
-                    noCars++;
-                }
-            }
-
-            Console.WriteLine($"[{coordsX}, {coordsY}] LEFT checking x [{coordsX - xDifference - 1}, {Utils.interestPointsX[leftXStreet]}) on y {coordsY - yDifference}");
-            *//*return (State.Left, 25 / 5 - noCars);*//*
-        }
-
-        public static void getRightSegmentCost(int coordsX, int coordsY)
-        {
-            int noCars = 0;
-            int yDifference = 0, xDifference = 0;
-            if (Utils.interestPointsY.Contains(coordsY)) { xDifference = -1; }
-            else if (Utils.interestPointsY.Contains(coordsY - 1)) { yDifference = 1; }
-
-            int rightXStreet = Array.IndexOf(Utils.interestPointsX, coordsX - xDifference) + 1;
-            for (int x = coordsX - xDifference + 1; x < Utils.interestPointsX[rightXStreet]; x++)
-            {
-                if (Utils.CarPositions.Values.Contains(Utils.Str(x, coordsY - yDifference)))
-                {
-                    noCars++;
-                }
-            }
-
-            Console.WriteLine($"[{coordsX}, {coordsY}] RIGHT checking x [{coordsX - xDifference + 1}, {Utils.interestPointsX[rightXStreet]}) on y {coordsY - yDifference}");
-
-            *//*return (State.Left, 25 / 5 - noCars);*//*
-        }*/
     }
 }
