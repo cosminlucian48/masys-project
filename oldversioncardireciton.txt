@@ -1,0 +1,35 @@
+/* if (currentPos.x == targetPos.x|| !Utils.interestPointsY.Contains(currentPos.y))
+ {
+     _direction = State.Up;
+ }
+ else
+ {
+     if (Array.IndexOf(Utils.interestPointsY, currentPos.y) % 2 == 0)
+     {
+         if (Utils.interestPointsX.Contains(currentPos.x))
+         {
+             _direction = (State)_optimalDirection;
+         }
+         else
+         {
+             _direction = State.Left;
+         }
+         
+     }
+     else
+     {
+         if (currentPos.x < targetPos.x)
+         {
+             if (Utils.interestPointsX.Contains(currentPos.x))
+             {
+                 _direction = (State)_optimalDirection;
+             }
+             else
+             {
+                 _direction = State.Right;
+             }
+         }
+         // so that it can get on the left direction road. It has to go one more square UP
+         else _direction = State.Up;
+     }
+ }*/

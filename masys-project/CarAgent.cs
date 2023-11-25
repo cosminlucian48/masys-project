@@ -251,6 +251,5 @@ namespace Project
                   string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));
             return segmentCosts[0].Item1;
         }
-
     }
 }
