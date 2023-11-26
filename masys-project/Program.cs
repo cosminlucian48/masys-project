@@ -1,5 +1,8 @@
-﻿namespace Project
+﻿using System;
+
+namespace Project
 {
+    
     public class Program
     {
         private static void Main()
@@ -17,7 +20,7 @@
             
             for (int i = 0; i < Utils.trafficLightsPos.Count; i++)
             {
-                var trafficLightAgent = new TrafficLightAgent(new Position(Utils.trafficLightsPos[i][0], Utils.trafficLightsPos[i][1]));
+                var trafficLightAgent = new TrafficLightAgent(new Position(Convert.ToInt32(Utils.trafficLightsPos[i][0]), Convert.ToInt32(Utils.trafficLightsPos[i][1])));
                 
                 //keeping this for testing purposes
                 /*if (Utils.trafficLightsPos[i][1] > 7)

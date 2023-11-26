@@ -57,6 +57,7 @@ namespace Project
 
         public void HandleMove()
         {
+            string color = "";
             //update current position with intended position
             if (this.intendedPosition.x != -1)
             {
@@ -65,7 +66,7 @@ namespace Project
             }
 
             //check if car is on traffic light
-            if (Utils.TrafficLightPositions.TryGetValue(this.currentPos.ToString(), out string color))
+            if (Utils.TrafficLightPositions.ContainsKey(this.currentPos.ToString()))
             {
                 //check car intention; basically if it is already in targetX/targetX-1/targetX+1 it will go UP, and if not it will consider also LEFT/RIGHT
                 int xAxisDifference = currentPos.x - targetPos.x;
@@ -91,6 +92,8 @@ namespace Project
                 {
                     _optimalDirection = _intendedDirection;
                 }
+
+                color = Utils.TrafficLightPositions[this.currentPos.ToString()][Convert.ToString(_optimalDirection)];
             }
 
             _direction = State.Up;
@@ -114,22 +117,9 @@ namespace Project
             }
 
             //if traffic light is red
-            if (color == "Red")
-            {
-                //check if car has intermitent right green
-                if (!((this._direction == State.Up && _optimalDirection == State.Right)
-                    || (this._direction == State.Left && _optimalDirection == State.Up)))
-                {
-                    //to wait an entire turn
-                    Send("traffic", "carwait");
-
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine($"[{this.Name}] has intermitent green!");
-                }
-            }
+            if (color == "Red") { Send("traffic", "carwait"); return; }
+            else if (color == "IntermitentGreen") Console.WriteLine($"[{this.Name}] has intermitent green!");
+            
 
             //update intended position based on direction
             intendedPosition = new Position(currentPos.x, currentPos.y);

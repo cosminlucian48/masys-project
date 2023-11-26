@@ -18,12 +18,14 @@ namespace Project
         public static int[] interestPointsX = { 0, 6, 12, 18 };
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
         public static int[] interestPointsY = { 5, 6, 12, 13 };
+
+        public static int[] trafficLightTimes = { 0, 5, 10 };
         //5 12 L --- 6 13 R
         public static List<int[]> trafficLightsPos = new List<int[]>();
 
         public static Dictionary<string, string> CarPositions = new Dictionary<string, string>();
         public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
-        public static Dictionary<string, string> TrafficLightPositions = new Dictionary<string, string>();
+        public static Dictionary<string, Dictionary<string, string>> TrafficLightPositions = new Dictionary<string, Dictionary<string, string>>();
 
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
@@ -98,6 +100,11 @@ namespace Project
         public static string Str(object p1, object p2, object p3)
         {
             return string.Format("{0} {1} {2}", p1, p2, p3);
+        }
+
+        public static string Str(object p1, object p2, object p3, object p4)
+        {
+            return string.Format("{0} {1} {2} {3}", p1, p2, p3, p4);
         }
     }
 }

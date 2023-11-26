@@ -109,12 +109,25 @@ namespace Project
 
             }
 
-            foreach (KeyValuePair<string, string> entry in Utils.TrafficLightPositions)
+            foreach (KeyValuePair<string, Dictionary<string,string>> entry in Utils.TrafficLightPositions)
             {
                 string[] t = entry.Key.Split();
                 int x = Convert.ToInt32(t[0]);
                 int y = Convert.ToInt32(t[1]);
-                g.FillEllipse(entry.Value=="Green" ? Brushes.Green : Brushes.Red, (x) * cellSize + 1, (y) * cellSize + 1, cellSize - 20, cellSize - 20);  
+                int padding = 0;
+                foreach(var tf in entry.Value)
+                {
+                    Brush brush = null;
+                    if (tf.Value == "Green") brush = Brushes.Green;
+                    else if (tf.Value == "Red") brush = Brushes.Red;
+                    else if (tf.Value == "IntermitentGreen") brush = Brushes.GreenYellow;
+
+
+                    g.FillEllipse(brush, (x) * cellSize + 1 + padding, (y) * cellSize + 1, cellSize - 26, cellSize - 26);
+                    g.DrawString(tf.Key.Substring(0,1), new Font("Arial", 8), Brushes.Black, new PointF((x) * cellSize + 4 + padding, y * cellSize + 1));
+                    padding += 15;
+                }
+                
             }
 
             lock (_locker)

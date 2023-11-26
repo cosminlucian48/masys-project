@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Timers;
+using System.Collections;
 
 namespace Project
 {
@@ -140,13 +141,18 @@ namespace Project
         private void HandleLightPosition(string position)
         {
             string[] t = position.Split();
-            Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", "Green");
+            if (!Utils.TrafficLightPositions.ContainsKey($"{t[0]} {t[1]}"))
+            {
+                Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", new Dictionary<string, string> ());
+            }
+
+            Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];
         }
 
         private void HandleLightChange(string parameters)
         {
             string[] t = parameters.Split();
-            Utils.TrafficLightPositions[$"{t[0]} {t[1]}"] = t[2];
+            Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];
         }
 
 
