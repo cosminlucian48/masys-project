@@ -1,0 +1,1 @@
+ Get-Content -Path 'C:\Users\cbeja\source\repos\masys-project\masys-project\bin\Debug\output.txt' -Wait

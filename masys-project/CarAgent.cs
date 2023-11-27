@@ -25,6 +25,9 @@ namespace Project
             _optimalDirection = null;
             _direction = State.Up;
             Console.WriteLine($"[{Name}]: Starting! with target pos=[{this.targetPos.x} {this.targetPos.y}]");
+            //write to log file concurently
+            writePositionToFile();
+
             Send("traffic", Utils.Str("position", currentPos.ToString(), targetPos.ToString()));
         }
 
@@ -240,6 +243,29 @@ namespace Project
             Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
                   string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));
             return segmentCosts[0].Item1;
+        }
+
+        public void writePositionToFile()
+        {
+            //we added this mutex for concurrent writes
+            using (Mutex mutex = new Mutex(false, "MyMutexName"))
+            {
+                if (mutex.WaitOne())
+                {
+                    try
+                    {
+                        Utils.writeToFile($"[{Name}]: Starting from [{this.currentPos.x} {this.currentPos.y}] to[{this.targetPos.x} {this.targetPos.y}]");
+                    }
+                    finally
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unable to acquire mutex. Another process is using the file.");
+                }
+            }
         }
     }
 }
