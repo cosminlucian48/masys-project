@@ -60,6 +60,7 @@ namespace Project
 
             Console.WriteLine($"{p.x} {p.y} , {trafficLights.Count}");
 
+            //add in if block, for nonintelligent traffic light
             _timer = new Timer();
             _timer.Elapsed += t_Elapsed;
             _timer.Interval = trafficLightInterval;
@@ -97,6 +98,7 @@ namespace Project
             switch (action)
             {
                 case "lightchange":
+                    //TODO: keep in mind that for inteligence>=1 we dont need timer
                     HandleLightChange();
                     break;
 
