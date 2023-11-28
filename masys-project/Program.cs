@@ -17,10 +17,10 @@ namespace Project
             }
 
             Utils.initializeTrafficLights();
-           
+            
             for (int i = 0; i < Utils.trafficLightsPos.Count; i++)
             {
-                var trafficLightAgent = new TrafficLightAgent(new Position(Convert.ToInt32(Utils.trafficLightsPos[i][0]), Convert.ToInt32(Utils.trafficLightsPos[i][1])), Utils.trafficLightsPos[i][2]);
+                var trafficLightAgent = new TrafficLightAgent(new Position(Convert.ToInt32(Utils.trafficLightsPos[i][0]), Convert.ToInt32(Utils.trafficLightsPos[i][1])));
                 
                 //keeping this for testing purposes
                 /*if (Utils.trafficLightsPos[i][1] > 7)
@@ -48,6 +48,7 @@ namespace Project
             Utils.CarPositions.Add("test3", "6 9");
             Utils.CarPositions.Add("test4", "6 8");
             Utils.CarPositions.Add("test5", "6 7");*/
+
 
             var trafficAgent = new TrafficAgent();
             env.Add(trafficAgent, "traffic");

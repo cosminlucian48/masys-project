@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using static System.Windows.Forms.AxHost;
 using System.Linq;
-using System.IO;
 
 namespace Project
 {
@@ -19,6 +18,8 @@ namespace Project
         public static int[] interestPointsX = { 0, 6, 12, 18 };
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
         public static int[] interestPointsY = { 5, 6, 12, 13 };
+
+        public static int[] trafficLightTimes = { 0, 5, 10 };
         //5 12 L --- 6 13 R
         public static List<int[]> trafficLightsPos = new List<int[]>();
 
@@ -31,15 +32,6 @@ namespace Project
         public static int carsToGenerate = 3; // [0,4]
         public static string logFocus = "car";
         public static bool verboseLogs = true;
-        public static StreamWriter writer = null;
-
-        public static void writeToFile(string message)
-        {
-            using (StreamWriter writer = new StreamWriter($"output.txt", true))
-            {
-                writer.WriteLine($"{message}");
-            }
-        }
 
         public static void initializeTrafficLights()
         {
@@ -58,30 +50,32 @@ namespace Project
                 }
             }
 
+
             for (int i = 0; i < totalCombinations; i++)
             {
                 if (Array.IndexOf(Utils.interestPointsY, trafficLights[i, 1]) % 2 == 0)
                 {
                     if (trafficLights[i, 0] + 1 < gridLength)
                     {
-                        int[] combination = { trafficLights[i, 0] + 1, trafficLights[i, 1], 1 };
+                        int[] combination = { trafficLights[i, 0] + 1, trafficLights[i, 1] };
                         trafficLightsPos.Add(combination);
                     }
+
                 }
                 else
                 {
                     if (trafficLights[i, 0] - 1 > 0)
                     {
-                        int[] combination1 = { trafficLights[i, 0] - 1, trafficLights[i, 1], -1 };
+                        int[] combination1 = { trafficLights[i, 0] - 1, trafficLights[i, 1] };
                         trafficLightsPos.Add(combination1);
                     }
 
-                    int[] combination2 = { trafficLights[i, 0], trafficLights[i, 1] + 1, 0 };
+                    int[] combination2 = { trafficLights[i, 0], trafficLights[i, 1] + 1 };
                     trafficLightsPos.Add(combination2);
                 }
             }
-        }
 
+        }
         public static void ParseMessage(string content, out string action, out string parameters)
         {
             string[] t = content.Split();
