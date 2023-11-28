@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace Project
 {
@@ -85,8 +84,6 @@ namespace Project
 
                 //compute car optimal direction
                 if (
-                    Utils.CarPrioritization == "traffic"
-                    &&
                     (Utils.interestPointsY[3] == currentPos.y
                     || Utils.interestPointsY[2] == currentPos.y
                     || Utils.interestPointsY[3] + 1 == currentPos.y)

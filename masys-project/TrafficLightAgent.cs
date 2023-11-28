@@ -119,7 +119,7 @@ namespace Project
 
             //if traffic light agent is on the side of the map, it has only 2 states
             // each state alternates from the previous one
-            if (pos.x % (Utils.gridLength - 1) == 0)
+            if (pos.x % (Utils.gridLength - 1) == 0 || pos.x == Utils.gridLength - 2)
             {
                 Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[Direction.Up].direction, trafficLights[Direction.Up].lightChange())));
                 if (trafficLights.ContainsKey(Direction.Left)) Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[Direction.Left].direction, trafficLights[Direction.Left].lightChange())));
