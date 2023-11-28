@@ -82,9 +82,15 @@ namespace Project
                 {
                     _intendedDirection = State.Up;
                 }
-                
-                //check optimal direction, based on traffic, only when on first Y streets 
-                if (Utils.interestPointsY[3] == currentPos.y || Utils.interestPointsY[2] == currentPos.y || Utils.interestPointsY[3] + 1 == currentPos.y)
+
+                //check optimal direction, based on car prioritization set in config, only when on first Y streets
+                if (
+                    Utils.CarPrioritization == "traffic"
+                    &&
+                    (Utils.interestPointsY[3] == currentPos.y
+                    || Utils.interestPointsY[2] == currentPos.y
+                    || Utils.interestPointsY[3] + 1 == currentPos.y)
+                )
                 {
                     _optimalDirection = chooseFavorableSegment(currentPos.x, currentPos.y);
                 }
@@ -119,7 +125,7 @@ namespace Project
             //if traffic light is red
             if (color == "Red") { Send("traffic", "carwait"); return; }
             else if (color == "IntermitentGreen") Console.WriteLine($"[{this.Name}] has intermitent green!");
-            
+
 
             //update intended position based on direction
             intendedPosition = new Position(currentPos.x, currentPos.y);
@@ -137,7 +143,7 @@ namespace Project
                 default:
                     break;
             }
-            if(intendedPosition.x < 0 || intendedPosition.y < 0 || (!Utils.interestPointsX.Contains(intendedPosition.x) && !Utils.interestPointsY.Contains(intendedPosition.y)))
+            if (intendedPosition.x < 0 || intendedPosition.y < 0 || (!Utils.interestPointsX.Contains(intendedPosition.x) && !Utils.interestPointsY.Contains(intendedPosition.y)))
             {
                 Console.WriteLine("--------------------------------------------------------------------------");
                 Console.WriteLine($"[{this.Name} out of bounds: [{intendedPosition.x},{intendedPosition.y}]]");
@@ -208,7 +214,7 @@ namespace Project
             int noCars = 0;
             int yDifference = 0, xDifference = 0;
             if (Utils.interestPointsY.Contains(coordsY)) { xDifference = -1; }
-            else if  (Utils.interestPointsY.Contains(coordsY - 1)) { yDifference = 1; }
+            else if (Utils.interestPointsY.Contains(coordsY - 1)) { yDifference = 1; }
 
             int rightXStreet = Array.IndexOf(Utils.interestPointsX, coordsX - xDifference) + 1;
             for (int x = coordsX - xDifference + 1; x < Utils.interestPointsX[rightXStreet]; x++)

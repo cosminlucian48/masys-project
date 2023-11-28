@@ -15,8 +15,7 @@ namespace Project
 
         public Color color = Color.Green;
         public Direction direction = Direction.Up;
-       
-        
+
         public TrafficLight(int x, int y, Color color, Direction direction)
         {
             this.x = x;

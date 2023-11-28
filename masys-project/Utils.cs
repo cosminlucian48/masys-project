@@ -30,7 +30,7 @@ namespace Project
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
         public static int carsToGenerate = 3; // [0,4]
-        public static string logFocus = "car";
+        public static string logFocus = "none";
         public static bool verboseLogs = true;
 
         public static void initializeTrafficLights()
