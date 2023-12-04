@@ -95,9 +95,10 @@ namespace Project
                 g.DrawString(i.ToString(), new Font("Arial", 11), Brushes.Black, new PointF(i * cellSize + 5, 5));
             }
 
-
+            
             if (_ownerAgent != null)
             {
+                //draw cars
                 foreach (KeyValuePair<string, string> entry in Utils.CarPositions)
                 {
                     string[] t = entry.Value.Split();
@@ -107,8 +108,39 @@ namespace Project
                     g.DrawString(entry.Key.Substring(3), textFont, Brushes.White, new PointF(x * cellSize + 10, y * cellSize + 10));
                 }
 
+                //inverted dictionary
+                Dictionary<string, List<string>> carPositionsInverted = new Dictionary<string, List<String>>();
+
+                foreach (var keyValuePair in Utils.CarDestinations)
+                {
+                    string name = keyValuePair.Value;
+                    string key = keyValuePair.Key;
+
+                    if (!carPositionsInverted.ContainsKey(name))
+                    {
+                        carPositionsInverted[name] = new List<String>();
+                    }
+
+                    carPositionsInverted[name].Add(key);
+                }
+
+                //destinations labels
+                foreach (KeyValuePair<string, List<string>> entry in carPositionsInverted)
+                {
+                    string[] t = entry.Key.Split();
+                    int x = Convert.ToInt32(t[0]);
+                    int y = Convert.ToInt32(t[1]);
+
+                    for (int i = 0; i < entry.Value.Count; i++)
+                    {
+                        g.DrawString(entry.Value[i].Substring(3), new Font("Arial", 7), Brushes.Black, new PointF(x * cellSize + 25, y * cellSize + 8 * i));
+                    }
+
+                }
             }
 
+
+            //draw traffic lights
             foreach (KeyValuePair<string, Dictionary<string,string>> entry in Utils.TrafficLightPositions)
             {
                 string[] t = entry.Key.Split();

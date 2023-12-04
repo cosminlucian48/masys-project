@@ -140,6 +140,7 @@ namespace Project
                 default:
                     break;
             }
+
             if (intendedPosition.x < 0 || intendedPosition.y < 0 || (!Utils.interestPointsX.Contains(intendedPosition.x) && !Utils.interestPointsY.Contains(intendedPosition.y)))
             {
                 Console.WriteLine("--------------------------------------------------------------------------");
@@ -229,24 +230,33 @@ namespace Project
 
         private State chooseFavorableSegment(int coordsX, int coordsY)
         {
-            //WIP - also have to check base don xdifference
+            //if car prioritisez traffic lights
             if (Utils.CarPrioritization == "trafficlights")
             {
                 var trafficLightState = Utils.TrafficLightPositions[this.currentPos.ToString()];
-                string desiredDirection = trafficLightState.FirstOrDefault(x => x.Value.Contains("Green")).Key;
-                switch (desiredDirection)
+
+                //if the car has the oportunity to chose between two directions. Basically this happends only when the intendedDirection is "Left" or "Right"
+                //as in that moment the car can go either "Up" or "Left"/"Right", and it will chose the first Green trafficlight
+                if ($"{_intendedDirection}" != "Up")
                 {
-                    case "Up":
-                        return State.Up;
-                    case "Left":
-                        return State.Left;
-                    case "Right":
-                        return State.Right;
-                    default:
-                        return State.Up;
+                    string desiredDirection = trafficLightState.Where(x => (x.Key == "Up" || x.Key == "Right") && x.Value.Contains("Green"))
+                        .FirstOrDefault(x => x.Value.Contains("Green")).Key;
+                    switch (desiredDirection)
+                    {
+                        case "Up":
+                            return State.Up;
+                        case "Left":
+                            return State.Left;
+                        case "Right":
+                            return State.Right;
+                        default:
+                            return State.Up;
+                    }
                 }
+                return State.Up;
+                
             }
-            //count cars on all possible segments
+            //if car prioritisez cars
             else if (Utils.CarPrioritization == "cars")
             {
                 //choose the segment to follow with the lowest cost if on first intersection
