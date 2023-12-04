@@ -239,7 +239,7 @@ namespace Project
                 //as in that moment the car can go either "Up" or "Left"/"Right", and it will chose the first Green trafficlight
                 if ($"{_intendedDirection}" != "Up")
                 {
-                    string desiredDirection = trafficLightState.Where(x => (x.Key == "Up" || x.Key == "Right") && x.Value.Contains("Green"))
+                    string desiredDirection = trafficLightState.Where(x => (x.Key == "Up" || x.Key == $"{_intendedDirection}") && x.Value.Contains("Green"))
                         .FirstOrDefault(x => x.Value.Contains("Green")).Key;
                     switch (desiredDirection)
                     {
@@ -250,10 +250,10 @@ namespace Project
                         case "Right":
                             return State.Right;
                         default:
-                            return State.Up;
+                            return _intendedDirection;
                     }
                 }
-                return State.Up;
+                return _intendedDirection;
                 
             }
             //if car prioritisez cars
