@@ -39,7 +39,7 @@ namespace Project
                 }*/
 
 
-                env.Add(trafficLightAgent, string.Format("light{0:D2}", i));
+                env.Add(trafficLightAgent, $"light {Utils.trafficLightsPos[i][0]} {Utils.trafficLightsPos[i][1]}");
             }
 
             //keeping this for testing purposes
