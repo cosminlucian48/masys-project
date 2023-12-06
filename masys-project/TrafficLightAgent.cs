@@ -13,15 +13,25 @@ namespace Project
         private enum Color { Red, Green };
         private enum Direction { Up, Left, Right };
         private string whereAmI = "";
-        private bool alertMode = false;
         private bool localAlertMode = false;
+        private Dictionary<string, int> directionAlertCounts = new Dictionary<string, int>
+        {
+            { "Left", 0 },
+            { "Right", 0 },
+            { "Up", 0 }
+        };
+        private Dictionary<string, bool> directionAlertModes = new Dictionary<string, bool>
+        {
+            { "Left", false },
+            { "Right", false },
+            { "Up", false }
+        };
         private int carsOnMe = 0;
         private Dictionary<Direction, TrafficLight> trafficLights = new Dictionary<Direction, TrafficLight>();
         private readonly int trafficLightInterval = 12 * Utils.Delay;
         private int _lightConfigState = 0;
         private List<string> neighboursToAlert = new List<string>();
         private bool firstRowTrafficLight;
-        private Pebble alert;
         public TrafficLightAgent(Position p)
         {
             //on UP
@@ -127,10 +137,12 @@ namespace Project
 
             if (carsOnMe >= Utils.AlertThreshold && localAlertMode== false)
             {
+                Console.WriteLine($"[{this.Name}] local alert triggered");
                 HandleAlertHelper(true);
             }
             else if (carsOnMe < Utils.AlertThreshold && localAlertMode == true)
             {
+                Console.WriteLine($"[{this.Name}] local alert ended.");
                 HandleAlertHelper(false);
             }
             return;
@@ -178,7 +190,7 @@ namespace Project
         public void HandleAlertHelper(bool newAlertMode)
         {
             localAlertMode = newAlertMode;
-            alert = new Pebble(whereAmI, carsOnMe, localAlertMode);
+            Pebble alert = new Pebble(whereAmI, carsOnMe, localAlertMode, 1);
             foreach (string neigh in neighboursToAlert)
             {
                 if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
@@ -218,7 +230,7 @@ namespace Project
 
         public override void Act(Message message)
         {
-            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            //Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
 
@@ -237,10 +249,10 @@ namespace Project
 
         public void HandleAlert(string sender, string alertPebble)
         {
-            Pebble alert = Utils.returnPebbleFromAlertString(alertPebble);
+            Pebble receivedAlert = Utils.returnPebbleFromAlertString(alertPebble);
             Direction dir = Direction.Up;
 
-            switch (alert.Direction)
+            switch (receivedAlert.Direction)
             {
                 case "Up":
                     dir = Direction.Up;
@@ -254,10 +266,48 @@ namespace Project
                 default:
                     break;
             }
-
-            alertMode = alert.AlertMode;
             
-            Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
+            
+            if (directionAlertModes[receivedAlert.Direction] != receivedAlert.AlertMode)
+            {
+                if (receivedAlert.AlertMode)
+                {
+                    if (directionAlertCounts[receivedAlert.Direction] == 0)
+                    {
+                        directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                    }
+                    directionAlertCounts[receivedAlert.Direction] += 1;
+                }
+                else
+                {
+                    directionAlertCounts[receivedAlert.Direction] -= 1;
+                    if (directionAlertCounts[receivedAlert.Direction] == 0)
+                    {
+                        directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                    }
+                }
+
+                Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
+            }
+
+            HandleCarCountOnSegment();
+            //Console.WriteLine($"{this.Name} {receivedAlert.Distance}. {receivedAlert.NrOfCars} + {carsOnMe} = {receivedAlert.NrOfCars + carsOnMe}");
+
+            if (receivedAlert.Distance < Utils.TrafficLightAlertDistance)
+            {
+                receivedAlert.Distance += 1;
+                receivedAlert.Direction = whereAmI;
+                receivedAlert.NrOfCars += carsOnMe;
+
+                foreach (string neigh in neighboursToAlert)
+                {
+                    if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                    {
+                        Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                    }
+                }
+            }
+            
         }
         
 

@@ -49,7 +49,7 @@ namespace Project
 
         public override void Act(Message message)
         {
-            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            //Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
 
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);

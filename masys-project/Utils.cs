@@ -32,8 +32,10 @@ namespace Project
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
         public static int carsToGenerate = 3; // [0,4]
+        public static int InitialTurnCarsToGenerate = 4;
         public static string logFocus = "none";
         public static bool verboseLogs = true;
+        public static int TrafficLightAlertDistance = Utils.TrafficLightIntelligence< 3 ? Utils.TrafficLightIntelligence: 10;
 
         public static void initializeTrafficLights()
         {
@@ -97,7 +99,7 @@ namespace Project
         public static Pebble returnPebbleFromAlertString(string parameters)
         {
             string [] t = parameters.Split();
-            return new Pebble(t[0], Convert.ToInt32(t[1]), Convert.ToBoolean(t[2]));
+            return new Pebble(t[0], Convert.ToInt32(t[1]), Convert.ToBoolean(t[2]), Convert.ToInt32(t[3]));
         }
 
         public static string Str(object p1, object p2)

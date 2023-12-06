@@ -8,7 +8,7 @@ namespace Project
         private static void Main()
         {
             var env = new ActressMas.EnvironmentMas(0, Utils.Delay);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < Utils.InitialTurnCarsToGenerate; i++)
             {
                 var carAgent = new CarAgent(new Position(Utils.interestPointsX[i], Utils.gridLength - 1), new Position(Utils.interestPointsX[Utils.RandNoGen.Next(4)], 0));
                 env.Add(carAgent, string.Format("car{0:D2}", i));
