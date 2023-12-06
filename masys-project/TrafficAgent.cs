@@ -49,10 +49,8 @@ namespace Project
 
         public override void Act(Message message)
         {
-            if (Utils.logFocus.Length > 0 && message.Sender.Contains(Utils.logFocus)) //see only car loggs
-            {
-                Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
-            }
+            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
 
@@ -144,6 +142,7 @@ namespace Project
             if (!Utils.TrafficLightPositions.ContainsKey($"{t[0]} {t[1]}"))
             {
                 Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", new Dictionary<string, string> ());
+                Utils.TrafficLightAlertMode.Add($"{t[0]} {t[1]}", false);
             }
 
             Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];

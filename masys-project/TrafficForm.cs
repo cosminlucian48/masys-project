@@ -139,6 +139,8 @@ namespace Project
                 }
             }
 
+            Color transparentOrange = Color.FromArgb(128, Color.Orange); // Adjust 128 for the desired transparency level (0 to 255)
+            SolidBrush transparentOrangeBrush = new SolidBrush(transparentOrange);
 
             //draw traffic lights
             foreach (KeyValuePair<string, Dictionary<string,string>> entry in Utils.TrafficLightPositions)
@@ -154,12 +156,16 @@ namespace Project
                     else if (tf.Value == "Red") brush = Brushes.Red;
                     else if (tf.Value == "IntermitentGreen") brush = Brushes.GreenYellow;
 
-
                     g.FillEllipse(brush, (x) * cellSize + 1 + padding, (y) * cellSize + 1, cellSize - 26, cellSize - 26);
                     g.DrawString(tf.Key.Substring(0,1), new Font("Arial", 8), Brushes.Black, new PointF((x) * cellSize + 4 + padding, y * cellSize + 1));
                     padding += 15;
                 }
-                
+
+                //mark on the map the trafficlights that are in alert mode
+                if (Utils.TrafficLightAlertMode[$"{x} {y}"] == true)
+                {
+                    g.FillEllipse(transparentOrangeBrush, (x) * cellSize + 1, (y) * cellSize + 1, cellSize, cellSize);
+                }
             }
 
             lock (_locker)
