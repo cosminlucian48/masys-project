@@ -291,9 +291,13 @@ namespace Project
             }
 
             HandleCarCountOnSegment();
-            //Console.WriteLine($"{this.Name} {receivedAlert.Distance}. {receivedAlert.NrOfCars} + {carsOnMe} = {receivedAlert.NrOfCars + carsOnMe}");
+            
 
-            if (receivedAlert.Distance < Utils.TrafficLightAlertDistance)
+            double localThreshold = (receivedAlert.NrOfCars + carsOnMe) / (receivedAlert.Distance + 1);
+
+            //Console.WriteLine($"{receivedAlert.Distance}. {receivedAlert.NrOfCars} + {carsOnMe} = {receivedAlert.NrOfCars + carsOnMe}  / {localThreshold}");
+
+            if (receivedAlert.Distance < Utils.TrafficLightAlertDistance  && localThreshold >= Utils.DistantAlertThreshold)
             {
                 receivedAlert.Distance += 1;
                 receivedAlert.Direction = whereAmI;

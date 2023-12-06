@@ -15,6 +15,7 @@ namespace Project
         public static string CarPrioritization = ConfigurationManager.AppSettings.Get("CarPrioritization");
         public static int Delay = Convert.ToInt32(ConfigurationManager.AppSettings.Get("TurnDelay"));
         public static double AlertThreshold = Convert.ToDouble(ConfigurationManager.AppSettings.Get("AlertThreshold"));
+        public static double DistantAlertThreshold = Convert.ToDouble(ConfigurationManager.AppSettings.Get("DistantAlertThreshold"));
         public static int gridLength = 19;
         public static int[] interestPointsX = { 0, 6, 12, 18 };
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
