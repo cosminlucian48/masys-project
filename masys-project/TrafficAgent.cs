@@ -142,6 +142,7 @@ namespace Project
             if (!Utils.TrafficLightPositions.ContainsKey($"{t[0]} {t[1]}"))
             {
                 Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", new Dictionary<string, string> ());
+                Utils.TrafficLightAlertMode.Add($"{t[0]} {t[1]}", false);
             }
 
             Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];

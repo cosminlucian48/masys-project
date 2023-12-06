@@ -27,6 +27,7 @@ namespace Project
         public static Dictionary<string, string> CarPositions = new Dictionary<string, string>();
         public static Dictionary<string, string> CarDestinations = new Dictionary<string, string>();
         public static Dictionary<string, Dictionary<string, string>> TrafficLightPositions = new Dictionary<string, Dictionary<string, string>>();
+        public static Dictionary<string, bool> TrafficLightAlertMode = new Dictionary<string, bool>();
 
         public static Random RandNoGen = new Random();
         public static int noAgents = 0;
@@ -96,7 +97,7 @@ namespace Project
         public static Pebble returnPebbleFromAlertString(string parameters)
         {
             string [] t = parameters.Split();
-            return new Pebble(t[0], Convert.ToInt32(t[1]));
+            return new Pebble(t[0], Convert.ToInt32(t[1]), Convert.ToBoolean(t[2]));
         }
 
         public static string Str(object p1, object p2)

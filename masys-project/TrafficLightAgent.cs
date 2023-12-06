@@ -10,16 +10,17 @@ namespace Project
     {
         private Timer _timer, _alertTimer;
         public Position pos;
-        /*private enum State { Up, Left, Right };*/
         private enum Color { Red, Green };
         private enum Direction { Up, Left, Right };
         private string whereAmI = "";
         private bool alertMode = false;
+        private bool localAlertMode = false;
         private int carsOnMe = 0;
         private Dictionary<Direction, TrafficLight> trafficLights = new Dictionary<Direction, TrafficLight>();
         private readonly int trafficLightInterval = 12 * Utils.Delay;
         private int _lightConfigState = 0;
         private List<string> neighboursToAlert = new List<string>();
+        private bool firstRowTrafficLight;
         private Pebble alert;
         public TrafficLightAgent(Position p)
         {
@@ -61,8 +62,10 @@ namespace Project
             //Console.WriteLine($"{p.x} {p.y} , {trafficLights.Count}");
 
             //check what neighbours this trafficlight should alert in case it has to many cars on its segment
-            
-            if(pos.y <= Utils.interestPointsY[3])
+            if(pos.y <= Utils.interestPointsY[3]) firstRowTrafficLight = false;
+            else firstRowTrafficLight = true;
+
+            if (!firstRowTrafficLight)
             {
                 switch (whereAmI)
                 {
@@ -92,12 +95,7 @@ namespace Project
                 }
             }
            
-            for(int i=0;i< neighboursToAlert.Count;i++)
-            {
-                Console.WriteLine($"[{pos.x} {pos.y}] has one neigh {neighboursToAlert[i]}");
-            }
-            //add in if block, for nonintelligent traffic light
-
+            //logic based on traffic light intelligence value
             if (Utils.TrafficLightIntelligence == 0)
             {
                 _timer = new Timer();
@@ -106,9 +104,12 @@ namespace Project
             }
             else
             {
-                _alertTimer = new Timer();
-                _alertTimer.Elapsed += alert_Elapsed;
-                _alertTimer.Interval = 2 * Utils.Delay;
+                if (!firstRowTrafficLight)
+                {
+                    _alertTimer = new Timer();
+                    _alertTimer.Elapsed += alert_Elapsed;
+                    _alertTimer.Interval = 2 * Utils.Delay;
+                }
             }
         }
 
@@ -121,14 +122,30 @@ namespace Project
 
         private void alert_Elapsed(object sender, ElapsedEventArgs e)
         {
+            //update carcount local varible
+            HandleCarCountOnSegment();
+
+            if (carsOnMe >= Utils.AlertThreshold && localAlertMode== false)
+            {
+                HandleAlertHelper(true);
+            }
+            else if (carsOnMe < Utils.AlertThreshold && localAlertMode == true)
+            {
+                HandleAlertHelper(false);
+            }
+            return;
+        }
+
+        public void HandleCarCountOnSegment()
+        {
             int nrOfCars = 0;
 
             switch (whereAmI)
             {
                 case "Up":
-                    for(int y = pos.y; y < pos.y + 5; y++)
+                    for (int y = pos.y; y < pos.y + 5; y++)
                     {
-                        if(Utils.CarPositions.Values.Contains($"{pos.x} {y}"))
+                        if (Utils.CarPositions.Values.Contains($"{pos.x} {y}"))
                         {
                             nrOfCars++;
                         }
@@ -155,37 +172,26 @@ namespace Project
                 default:
                     break;
             }
-
             carsOnMe = nrOfCars;
-            if (carsOnMe >= Utils.AlertThreshold && alertMode== false)
+        }
+
+        public void HandleAlertHelper(bool newAlertMode)
+        {
+            localAlertMode = newAlertMode;
+            alert = new Pebble(whereAmI, carsOnMe, localAlertMode);
+            foreach (string neigh in neighboursToAlert)
             {
-                foreach (string neigh in neighboursToAlert)
+                if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
                 {
-                    if(Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
-                    {
-                        alertMode = true;
-                        alert = new Pebble(whereAmI, carsOnMe);
-                        Send($"light {neigh}", Utils.Str("alert",alert.ToString()));
-                    }
-                }
-            }
-            else
-            {
-                if (carsOnMe < Utils.AlertThreshold && alertMode == true)
-                {
-                    foreach (string neigh in neighboursToAlert)
-                    {
-                        if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
-                        {
-                            alertMode = false;
-                            alert = new Pebble(whereAmI, carsOnMe);
-                            Send($"light {neigh}", Utils.Str("revokealert", alert.ToString()));
-                        }
-                    }
+                    Send($"light {neigh}", Utils.Str("alert", alert.ToString()));
                 }
             }
 
-            return;
+            //update ui so that it is visible which traffic light is in alert mode
+            if (Utils.TrafficLightAlertMode.ContainsKey($"{pos.x} {pos.y}") && localAlertMode != Utils.TrafficLightAlertMode[$"{pos.x} {pos.y}"] && !firstRowTrafficLight)
+            {
+                Utils.TrafficLightAlertMode[$"{pos.x} {pos.y}"] = localAlertMode;
+            }
         }
 
         public override void Setup()
@@ -202,7 +208,11 @@ namespace Project
             }
             else
             {
-                _alertTimer.Start();
+                //there is no point in checking traffic on first row traffic lights
+                if (!firstRowTrafficLight)
+                {
+                    _alertTimer.Start();
+                }
             }
         }
 
@@ -215,25 +225,19 @@ namespace Project
             switch (action)
             {
                 case "lightchange":
-                    //TODO: keep in mind that for inteligence>=1 we dont need timer
                     HandleLightChange();
                     break;
                 case "alert":
-                    HandleLightChange(message.Sender, parameters);
-                    break;
-                case "revokealert":
-                    HandleRevokeAlert(message.Sender, parameters);
+                    HandleAlert(message.Sender, parameters);
                     break;
                 default:
                     break;
             }
         }
 
-        public void HandleRevokeAlert(string sender, string alertPebble)
+        public void HandleAlert(string sender, string alertPebble)
         {
-            alertMode = false;
             Pebble alert = Utils.returnPebbleFromAlertString(alertPebble);
-
             Direction dir = Direction.Up;
 
             switch (alert.Direction)
@@ -251,44 +255,14 @@ namespace Project
                     break;
             }
 
-            if (trafficLights[dir].color == TrafficLight.Color.Red)
-            {
-                Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
-            }
-        }
-
-        public void HandleLightChange(string sender, string alertPebble)
-        {
-            Pebble alert = Utils.returnPebbleFromAlertString(alertPebble);
-            /*Console.WriteLine($"{this.Name} alert from {sender} = {alert.Direction}- {alert.NrOfCars}-------------------------------------");*/
-            alertMode = true;
-            Direction dir = Direction.Up;
-
-            switch (alert.Direction)
-            {
-                case "Up":
-                    dir = Direction.Up;
-                    break;
-                case "Right":
-                    dir = Direction.Right;
-                    break;
-                case "Left":
-                    dir = Direction.Left;
-                    break;
-                default:
-                    break;
-            }
-
-            if (trafficLights[dir].color == TrafficLight.Color.Green)
-            {
-                Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
-            }
+            alertMode = alert.AlertMode;
             
+            Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
         }
+        
 
         public void HandleLightChange()
         {
-            Console.WriteLine("WHATEEEVEEEEEEEEEEEEEEEEEEERR!!!!!!!!!!!!!!!!!!!");
             var middleCurrentStep = this._lightConfigState % 3;
 
             //Console.WriteLine($"[{this.Name}]: middleCurrentStep = {middleCurrentStep} {whereAmI}");

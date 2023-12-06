@@ -121,7 +121,7 @@ namespace Project
 
             //if traffic light is red
             if (color == "Red") { Send("traffic", "carwait"); return; }
-            else if (color == "IntermitentGreen") Console.WriteLine($"[{this.Name}] has intermitent green!");
+            //else if (color == "IntermitentGreen") Console.WriteLine($"[{this.Name}] has intermitent green!");
 
 
             //update intended position based on direction
@@ -270,8 +270,8 @@ namespace Project
 
                 segmentCosts.Sort((a, b) => a.Item2.CompareTo(b.Item2));
 
-                Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
-                      string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));
+                /*Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
+                      string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));*/
                 return segmentCosts[0].Item1;
             }
             else
