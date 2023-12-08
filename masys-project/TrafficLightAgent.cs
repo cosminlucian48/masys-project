@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Timers;
 
 namespace Project
 {
     public class TrafficLightAgent : Agent
     {
-        private Timer _timer, _alertTimer;
+        private System.Timers.Timer _timer, _alertTimer;
         public Position pos;
         private enum Color { Red, Green };
         private enum Direction { Up, Left, Right };
@@ -32,6 +33,7 @@ namespace Project
         private int _lightConfigState = 0;
         private List<string> neighboursToAlert = new List<string>();
         private bool firstRowTrafficLight;
+
         public TrafficLightAgent(Position p)
         {
             //on UP
@@ -69,7 +71,6 @@ namespace Project
                 }
             }
             this.pos = p;
-            //Console.WriteLine($"{p.x} {p.y} , {trafficLights.Count}");
 
             //check what neighbours this trafficlight should alert in case it has to many cars on its segment
             if(pos.y <= Utils.interestPointsY[3]) firstRowTrafficLight = false;
@@ -101,14 +102,13 @@ namespace Project
                         break;
                     default:
                         break;
-
                 }
             }
            
             //logic based on traffic light intelligence value
             if (Utils.TrafficLightIntelligence == 0)
             {
-                _timer = new Timer();
+                _timer = new System.Timers.Timer();
                 _timer.Elapsed += t_Elapsed;
                 _timer.Interval = trafficLightInterval;
             }
@@ -116,13 +116,14 @@ namespace Project
             {
                 if (!firstRowTrafficLight)
                 {
-                    _alertTimer = new Timer();
+                    _alertTimer = new System.Timers.Timer();
                     _alertTimer.Elapsed += alert_Elapsed;
                     _alertTimer.Interval = 2 * Utils.Delay;
                 }
             }
         }
 
+        //only used when intelligence is 0
         private void t_Elapsed(object sender, ElapsedEventArgs e)
         {
             this._lightConfigState++;
@@ -130,6 +131,7 @@ namespace Project
             return;
         }
 
+        //only used when intelligence is >0
         private void alert_Elapsed(object sender, ElapsedEventArgs e)
         {
             //update carcount local varible
@@ -148,6 +150,7 @@ namespace Project
             return;
         }
 
+        //helper function that counts how many cars are on this traffic lights road segment 
         public void HandleCarCountOnSegment()
         {
             int nrOfCars = 0;
@@ -187,6 +190,7 @@ namespace Project
             carsOnMe = nrOfCars;
         }
 
+        //helper function, to handle neighbouring traffic light alerting
         public void HandleAlertHelper(bool newAlertMode)
         {
             localAlertMode = newAlertMode;
@@ -266,8 +270,26 @@ namespace Project
                 default:
                     break;
             }
-            
-            
+
+            using (Mutex mutex = new Mutex(false, "MyMutexName"))
+            {
+                if (mutex.WaitOne())
+                {
+                    try
+                    {
+                        Utils.writeToFile($"[{Name}]: Got alert from {sender}, pebble = {alertPebble}, and my current counters on direction = {receivedAlert.Direction} are [{directionAlertModes[receivedAlert.Direction]},{directionAlertCounts[receivedAlert.Direction]}] ]", this.Name);
+                    }
+                    finally
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unable to acquire mutex. Another process is using the file.");
+                }
+            }
+
             if (directionAlertModes[receivedAlert.Direction] != receivedAlert.AlertMode)
             {
                 if (receivedAlert.AlertMode)
@@ -275,6 +297,7 @@ namespace Project
                     if (directionAlertCounts[receivedAlert.Direction] == 0)
                     {
                         directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                        Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
                     }
                     directionAlertCounts[receivedAlert.Direction] += 1;
                 }
@@ -284,32 +307,57 @@ namespace Project
                     if (directionAlertCounts[receivedAlert.Direction] == 0)
                     {
                         directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                        Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
                     }
                 }
-
-                Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
+                
+            }
+            else
+            {
+                if (receivedAlert.AlertMode)
+                {
+                    directionAlertCounts[receivedAlert.Direction] += 1;
+                }
+                else
+                {
+                    directionAlertCounts[receivedAlert.Direction] -= 1;
+                }
             }
 
             HandleCarCountOnSegment();
-            
 
             double localThreshold = (receivedAlert.NrOfCars + carsOnMe) / (receivedAlert.Distance + 1);
 
             //Console.WriteLine($"{receivedAlert.Distance}. {receivedAlert.NrOfCars} + {carsOnMe} = {receivedAlert.NrOfCars + carsOnMe}  / {localThreshold}");
 
-            if (receivedAlert.Distance < Utils.TrafficLightAlertDistance  && localThreshold >= Utils.DistantAlertThreshold)
+            if (receivedAlert.Distance < Utils.TrafficLightAlertDistance)
             {
-                receivedAlert.Distance += 1;
-                receivedAlert.Direction = whereAmI;
-                receivedAlert.NrOfCars += carsOnMe;
-
-                foreach (string neigh in neighboursToAlert)
+                if(receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold)
                 {
-                    if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                    receivedAlert.Distance += 1;
+                    receivedAlert.Direction = whereAmI;
+                    receivedAlert.NrOfCars += carsOnMe;
+
+                    foreach (string neigh in neighboursToAlert)
                     {
-                        Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                        if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                        {
+                            Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                        }
+                    }
+                }else if (!receivedAlert.AlertMode)
+                {
+                    receivedAlert.Distance += 1;
+                    receivedAlert.Direction = whereAmI;
+                    foreach (string neigh in neighboursToAlert)
+                    {
+                        if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                        {
+                            Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                        }
                     }
                 }
+                
             }
             
         }

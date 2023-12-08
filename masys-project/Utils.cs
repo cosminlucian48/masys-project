@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using static System.Windows.Forms.AxHost;
 using System.Linq;
+using System.IO;
 
 namespace Project
 {
@@ -37,7 +38,15 @@ namespace Project
         public static string logFocus = "none";
         public static bool verboseLogs = true;
         public static int TrafficLightAlertDistance = Utils.TrafficLightIntelligence< 3 ? Utils.TrafficLightIntelligence: 10;
+        public static StreamWriter writer = null;
 
+        public static void writeToFile(string message, string sender)
+        {
+            using (StreamWriter writer = new StreamWriter($"{sender}.txt", true))
+            {
+                writer.WriteLine($"{message}");
+            }
+        }
         public static void initializeTrafficLights()
         {
             int totalCombinations = interestPointsX.Length * interestPointsY.Length;
