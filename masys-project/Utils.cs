@@ -21,8 +21,6 @@ namespace Project
         public static int[] interestPointsX = { 0, 6, 12, 18 };
         //keep in mind that the index of the elemnt is used in order to get the left/right direction
         public static int[] interestPointsY = { 5, 6, 12, 13 };
-
-        public static int[] trafficLightTimes = { 0, 5, 10 };
         //5 12 L --- 6 13 R
         public static List<int[]> trafficLightsPos = new List<int[]>();
 

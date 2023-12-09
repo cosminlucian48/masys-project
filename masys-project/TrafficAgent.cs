@@ -54,7 +54,6 @@ namespace Project
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
 
-
             switch (action)
             {
                 //TODO: cases
@@ -123,9 +122,7 @@ namespace Project
                     Utils.noAgents += 1;
                     this.Environment.Add(carAgent, string.Format("car{0:D2}", Utils.noAgents));
                 }
-
             }
-
         }
         private void HandlePosition(string sender, string positions)
         {
@@ -133,6 +130,7 @@ namespace Project
 
             Utils.CarPositions.Add(sender, $"{t[0]} {t[1]}");
             Utils.CarDestinations.Add(sender, $"{t[2]} {t[3]}");
+
             Send(sender, "move");
         }
 
@@ -144,7 +142,6 @@ namespace Project
                 Utils.TrafficLightPositions.Add($"{t[0]} {t[1]}", new Dictionary<string, string> ());
                 Utils.TrafficLightAlertMode.Add($"{t[0]} {t[1]}", false);
             }
-
             Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];
         }
 
@@ -153,7 +150,6 @@ namespace Project
             string[] t = parameters.Split();
             Utils.TrafficLightPositions[$"{t[0]} {t[1]}"][t[2]] = t[3];
         }
-
 
         private void HandleChange(string sender, string position)
         {
@@ -184,8 +180,6 @@ namespace Project
             {
                 Send(sender, "move");
             }
-
         }
-
     }
 }

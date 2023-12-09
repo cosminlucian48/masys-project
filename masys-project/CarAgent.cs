@@ -69,33 +69,13 @@ namespace Project
             {
                 //check car intention; basically if it is already in targetX/targetX-1/targetX+1 it will go UP, and if not it will consider also LEFT/RIGHT
                 int xAxisDifference = currentPos.x - targetPos.x;
-                if (xAxisDifference < -1)
-                {
-                    _intendedDirection = State.Right;
-                }
-                else if (xAxisDifference > 1)
-                {
-                    _intendedDirection = State.Left;
-                }
-                else
-                {
-                    _intendedDirection = State.Up;
-                }
+                _intendedDirection = (xAxisDifference < -1) ? State.Right : (xAxisDifference > 1) ? State.Left : State.Up;
 
                 //compute car optimal direction
-                if (
-                    (Utils.interestPointsY[3] == currentPos.y
-                    || Utils.interestPointsY[2] == currentPos.y
-                    || Utils.interestPointsY[3] + 1 == currentPos.y)
-                )
-                {
-                    //set optimal direction, based on car prioritization
-                    _optimalDirection = chooseFavorableSegment(currentPos.x, currentPos.y);
-                }
-                else
-                {
-                    _optimalDirection = _intendedDirection;
-                }
+                //on first level of intersections we compute the optimal direction based on the car prioritization parameter
+                //on second level of intersection we just go on the intended direction
+                _optimalDirection = (Utils.interestPointsY[3] == currentPos.y || Utils.interestPointsY[2] == currentPos.y || Utils.interestPointsY[3] + 1 == currentPos.y) 
+                    ? chooseFavorableSegment(currentPos.x, currentPos.y) : _intendedDirection;
 
                 color = Utils.TrafficLightPositions[this.currentPos.ToString()][Convert.ToString(_optimalDirection)];
             }
@@ -103,26 +83,26 @@ namespace Project
             _direction = State.Up;
 
             //decide car direction
+            //default: cars goes "UP"
+            //if car is not on target position X value and it is somewhere on a Y road it will go either Left or Right
             if (currentPos.x != targetPos.x && Utils.interestPointsY.Contains(currentPos.y))
             {
-                if (Array.IndexOf(Utils.interestPointsY, currentPos.y) % 2 == 0)
+                bool isEvenRow = Array.IndexOf(Utils.interestPointsY, currentPos.y) % 2 == 0;
+
+                //if it is on a X and Y axis it will go on the optimal Direction, and if not on either Left or Right
+                if (isEvenRow)
                 {
                     _direction = Utils.interestPointsX.Contains(currentPos.x) ? (State)_optimalDirection : State.Left;
                 }
-                else
+                else if (currentPos.x < targetPos.x)
                 {
-                    if (currentPos.x < targetPos.x)
-                    {
-                        _direction = Utils.interestPointsX.Contains(currentPos.x) ? (State)_optimalDirection : State.Right;
-                    }
+                    _direction = Utils.interestPointsX.Contains(currentPos.x) ? (State)_optimalDirection : State.Right;
                     // if currentPosX>targetPosX then car to go to the left road. And for this to happen it has to go one more square UP
                 }
             }
 
             //if traffic light is red
             if (color == "Red") { Send("traffic", "carwait"); return; }
-            //else if (color == "IntermitentGreen") Console.WriteLine($"[{this.Name}] has intermitent green!");
-
 
             //update intended position based on direction
             intendedPosition = new Position(currentPos.x, currentPos.y);
@@ -230,56 +210,51 @@ namespace Project
 
         private State chooseFavorableSegment(int coordsX, int coordsY)
         {
-            //if car prioritisez traffic lights
-            if (Utils.CarPrioritization == "trafficlights")
+            //the favorable road segment will be decided upon the choosen Car Prioritization parameter
+            switch (Utils.CarPrioritization)
             {
-                var trafficLightState = Utils.TrafficLightPositions[this.currentPos.ToString()];
+                case "trafficlights":
+                    var trafficLightState = Utils.TrafficLightPositions[this.currentPos.ToString()];
 
-                //if the car has the oportunity to chose between two directions. Basically this happends only when the intendedDirection is "Left" or "Right"
-                //as in that moment the car can go either "Up" or "Left"/"Right", and it will chose the first Green trafficlight
-                if ($"{_intendedDirection}" != "Up")
-                {
-                    string desiredDirection = trafficLightState.Where(x => (x.Key == "Up" || x.Key == $"{_intendedDirection}") && x.Value.Contains("Green"))
-                        .FirstOrDefault(x => x.Value.Contains("Green")).Key;
-                    switch (desiredDirection)
+                    //if the car has the oportunity to chose between two directions. Basically this happens only when the intendedDirection is "Left" or "Right"
+                    //as in that moment the car can go either "Up" or "Left"/"Right", and it will chose the first Green trafficlight
+                    if ($"{_intendedDirection}" != "Up")
                     {
-                        case "Up":
-                            return State.Up;
-                        case "Left":
-                            return State.Left;
-                        case "Right":
-                            return State.Right;
-                        default:
-                            return _intendedDirection;
+                        string desiredDirection = trafficLightState.Where(x => (x.Key == "Up" || x.Key == $"{_intendedDirection}") && x.Value.Contains("Green"))
+                            .FirstOrDefault(x => x.Value.Contains("Green")).Key;
+                        switch (desiredDirection)
+                        {
+                            case "Up":
+                                return State.Up;
+                            case "Left":
+                                return State.Left;
+                            case "Right":
+                                return State.Right;
+                            default:
+                                return _intendedDirection;
+                        }
                     }
-                }
-                return _intendedDirection;
-                
+                    return _intendedDirection;
+
+                case "cars":
+                    //choose the segment to follow with the lowest cost if on first intersection
+                    List<(State, double)> segmentCosts = new List<(State, double)>
+                    {
+                        getUpperSegmentCost(coordsX, coordsY)
+                    };
+
+                    if (_intendedDirection == State.Left) { segmentCosts.Add(getLeftSegmentCost(coordsX, coordsY)); }
+                    if (_intendedDirection == State.Right) { segmentCosts.Add(getRightSegmentCost(coordsX, coordsY)); }
+
+                    segmentCosts.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+
+                    /*Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
+                          string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));*/
+                    return segmentCosts[0].Item1;
+
+                default:
+                    throw new Exception("CarPrioritization must be 'car' or 'traffic'!");
             }
-            //if car prioritisez cars
-            else if (Utils.CarPrioritization == "cars")
-            {
-                //choose the segment to follow with the lowest cost if on first intersection
-                List<(State, double)> segmentCosts = new List<(State, double)>
-                {
-                    getUpperSegmentCost(coordsX, coordsY)
-                };
-
-                if (_intendedDirection == State.Left) { segmentCosts.Add(getLeftSegmentCost(coordsX, coordsY)); }
-                if (_intendedDirection == State.Right) { segmentCosts.Add(getRightSegmentCost(coordsX, coordsY)); }
-
-                segmentCosts.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-
-                /*Console.WriteLine($"[{Name}] optimal direction: {segmentCosts[0].Item1} intendedDirection {this._intendedDirection}; based on: " +
-                      string.Join("; ", segmentCosts.Select(s => $"[{s.Item1}] cost {s.Item2}")));*/
-                return segmentCosts[0].Item1;
-            }
-            else
-            {
-                throw new Exception("CarPrioritization must be 'car' or 'traffic'!");
-            }
-
-
         }
     }
 }

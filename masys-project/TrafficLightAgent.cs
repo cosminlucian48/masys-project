@@ -230,11 +230,12 @@ namespace Project
                     _alertTimer.Start();
                 }
             }
+
         }
 
         public override void Act(Message message)
         {
-            //Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
+            Console.WriteLine("\t[{1} -> {0}]: {2}", this.Name, message.Sender, message.Content);
             string action; string parameters;
             Utils.ParseMessage(message.Content, out action, out parameters);
 
@@ -271,6 +272,8 @@ namespace Project
                     break;
             }
 
+            //debug code
+            //every traffic light would write from who it got an alert.
             using (Mutex mutex = new Mutex(false, "MyMutexName"))
             {
                 if (mutex.WaitOne())
@@ -290,6 +293,8 @@ namespace Project
                 }
             }
 
+            //do stuff only if received alert is different than the current alert on the received direction
+            //basically, the light will be changed only when the counters reaches 0, either by incrementing or decrementing the counter based on the alert types
             if (directionAlertModes[receivedAlert.Direction] != receivedAlert.AlertMode)
             {
                 if (receivedAlert.AlertMode)
@@ -310,34 +315,29 @@ namespace Project
                         Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
                     }
                 }
-                
             }
             else
             {
-                if (receivedAlert.AlertMode)
-                {
-                    directionAlertCounts[receivedAlert.Direction] += 1;
-                }
-                else
-                {
-                    directionAlertCounts[receivedAlert.Direction] -= 1;
-                }
+                int alertChange = receivedAlert.AlertMode ? 1 : -1;
+                directionAlertCounts[receivedAlert.Direction] += alertChange;
             }
 
+            //update nr of cars on segment and then compute the threshold
             HandleCarCountOnSegment();
-
             double localThreshold = (receivedAlert.NrOfCars + carsOnMe) / (receivedAlert.Distance + 1);
 
             //Console.WriteLine($"{receivedAlert.Distance}. {receivedAlert.NrOfCars} + {carsOnMe} = {receivedAlert.NrOfCars + carsOnMe}  / {localThreshold}");
 
+            //alert the neighbouring traffic lights only if the distance permits (the distance is unlimited only in intelligence 3 scenario)
             if (receivedAlert.Distance < Utils.TrafficLightAlertDistance)
             {
-                if(receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold)
-                {
-                    receivedAlert.Distance += 1;
-                    receivedAlert.Direction = whereAmI;
-                    receivedAlert.NrOfCars += carsOnMe;
+                receivedAlert.Distance += 1;
+                receivedAlert.Direction = whereAmI;
 
+                //send alert to neighbouring traffic lights with an updated pebble
+                if (receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold)
+                {
+                    receivedAlert.NrOfCars += carsOnMe;
                     foreach (string neigh in neighboursToAlert)
                     {
                         if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
@@ -347,8 +347,6 @@ namespace Project
                     }
                 }else if (!receivedAlert.AlertMode)
                 {
-                    receivedAlert.Distance += 1;
-                    receivedAlert.Direction = whereAmI;
                     foreach (string neigh in neighboursToAlert)
                     {
                         if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
@@ -357,17 +355,12 @@ namespace Project
                         }
                     }
                 }
-                
             }
-            
         }
-        
 
         public void HandleLightChange()
         {
             var middleCurrentStep = this._lightConfigState % 3;
-
-            //Console.WriteLine($"[{this.Name}]: middleCurrentStep = {middleCurrentStep} {whereAmI}");
 
             //if traffic light agent is on the side of the map, it has only 2 states
             // each state alternates from the previous one
