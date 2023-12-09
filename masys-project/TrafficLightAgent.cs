@@ -40,7 +40,7 @@ namespace Project
             if (Utils.interestPointsX.Contains(p.x))
             {
                 whereAmI = "Up";
-                trafficLights.Add(Direction.Up, new TrafficLight(p.x, p.y, Utils.TrafficLightIntelligence== 0 ? TrafficLight.Color.Green: TrafficLight.Color.Green, TrafficLight.Direction.Up));
+                trafficLights.Add(Direction.Up, new TrafficLight(p.x, p.y, Utils.TrafficLightIntelligence == 0 ? TrafficLight.Color.Green : TrafficLight.Color.Green, TrafficLight.Direction.Up));
                 if (p.x - 1 > 0)
                 {
                     trafficLights.Add(Direction.Left, new TrafficLight(p.x, p.y, Utils.TrafficLightIntelligence == 0 ? TrafficLight.Color.Green : TrafficLight.Color.Green, TrafficLight.Direction.Left));
@@ -57,7 +57,7 @@ namespace Project
                 trafficLights.Add(Direction.Up, new TrafficLight(p.x, p.y, TrafficLight.Color.IntermitentGreen, TrafficLight.Direction.Up));
                 if (p.x - 1 > 0)
                 {
-                    trafficLights.Add(Direction.Left, new TrafficLight(p.x, p.y, Utils.TrafficLightIntelligence == 0? TrafficLight.Color.Red : TrafficLight.Color.Green, TrafficLight.Direction.Left));
+                    trafficLights.Add(Direction.Left, new TrafficLight(p.x, p.y, Utils.TrafficLightIntelligence == 0 ? TrafficLight.Color.Red : TrafficLight.Color.Green, TrafficLight.Direction.Left));
                 }
             }
             //on RIGHT
@@ -73,7 +73,7 @@ namespace Project
             this.pos = p;
 
             //check what neighbours this trafficlight should alert in case it has to many cars on its segment
-            if(pos.y <= Utils.interestPointsY[3]) firstRowTrafficLight = false;
+            if (pos.y <= Utils.interestPointsY[3]) firstRowTrafficLight = false;
             else firstRowTrafficLight = true;
 
             if (!firstRowTrafficLight)
@@ -104,7 +104,7 @@ namespace Project
                         break;
                 }
             }
-           
+
             //logic based on traffic light intelligence value
             if (Utils.TrafficLightIntelligence == 0)
             {
@@ -137,7 +137,7 @@ namespace Project
             //update carcount local varible
             HandleCarCountOnSegment();
 
-            if (carsOnMe >= Utils.AlertThreshold && localAlertMode== false)
+            if (carsOnMe >= Utils.AlertThreshold && localAlertMode == false)
             {
                 Console.WriteLine($"[{this.Name}] local alert triggered");
                 HandleAlertHelper(true);
@@ -297,24 +297,34 @@ namespace Project
             //basically, the light will be changed only when the counters reaches 0, either by incrementing or decrementing the counter based on the alert types
             if (directionAlertModes[receivedAlert.Direction] != receivedAlert.AlertMode)
             {
-                if (receivedAlert.AlertMode)
+                //TO BE REFACTORED 2
+                // if (receivedAlert.AlertMode)
+                // {
+                //     if (directionAlertCounts[receivedAlert.Direction] == 0)
+                //     {
+                //         directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                //         Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
+                //     }
+                //     directionAlertCounts[receivedAlert.Direction] += 1;
+                // }
+                // else
+                // {
+                //     directionAlertCounts[receivedAlert.Direction] -= 1;
+                //     if (directionAlertCounts[receivedAlert.Direction] == 0)
+                //     {
+                //         directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                //         Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
+                //     }
+                // }
+
+                //REFACTORED CODE 2
+                if (!receivedAlert.AlertMode) directionAlertCounts[receivedAlert.Direction] -= 1;
+                if (directionAlertCounts[receivedAlert.Direction] == 0)
                 {
-                    if (directionAlertCounts[receivedAlert.Direction] == 0)
-                    {
-                        directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
-                        Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
-                    }
-                    directionAlertCounts[receivedAlert.Direction] += 1;
+                    directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
+                    Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
                 }
-                else
-                {
-                    directionAlertCounts[receivedAlert.Direction] -= 1;
-                    if (directionAlertCounts[receivedAlert.Direction] == 0)
-                    {
-                        directionAlertModes[receivedAlert.Direction] = receivedAlert.AlertMode;
-                        Send("traffic", Utils.Str("lightchange", Utils.Str(pos.x, pos.y, trafficLights[dir].direction, trafficLights[dir].lightChange())));
-                    }
-                }
+                if (receivedAlert.AlertMode) directionAlertCounts[receivedAlert.Direction] += 1;
             }
             else
             {
@@ -335,24 +345,36 @@ namespace Project
                 receivedAlert.Direction = whereAmI;
 
                 //send alert to neighbouring traffic lights with an updated pebble
-                if (receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold)
+                //TO BE REFACTORED 1
+                // if (receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold)
+                // {
+                //     receivedAlert.NrOfCars += carsOnMe;
+                //     foreach (string neigh in neighboursToAlert)
+                //     {
+                //         if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                //         {
+                //             Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                //         }
+                //     }
+                // }else if (!receivedAlert.AlertMode)
+                // {
+                //     foreach (string neigh in neighboursToAlert)
+                //     {
+                //         if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
+                //         {
+                //             Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
+                //         }
+                //     }
+                // }
+
+                //send alert to neighbouring traffic lights with an updated pebble
+                //REFACTORED CODE 1
+                if (receivedAlert.AlertMode && localThreshold >= Utils.DistantAlertThreshold) receivedAlert.NrOfCars += carsOnMe;
+                foreach (string neigh in neighboursToAlert)
                 {
-                    receivedAlert.NrOfCars += carsOnMe;
-                    foreach (string neigh in neighboursToAlert)
+                    if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
                     {
-                        if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
-                        {
-                            Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
-                        }
-                    }
-                }else if (!receivedAlert.AlertMode)
-                {
-                    foreach (string neigh in neighboursToAlert)
-                    {
-                        if (Utils.TrafficLightPositions.ContainsKey($"{neigh}"))
-                        {
-                            Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
-                        }
+                        Send($"light {neigh}", Utils.Str("alert", receivedAlert.ToString()));
                     }
                 }
             }
