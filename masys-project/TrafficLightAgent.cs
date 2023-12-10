@@ -148,7 +148,7 @@ namespace Project
         public void HandleAlertHelper(bool newAlertMode)
         {
             localAlertMode = newAlertMode;
-            Pebble alert = new Pebble(whereAmI, carsOnMe, localAlertMode, 1);
+            Pebble alert = new Pebble(whereAmI, carsOnMe, localAlertMode, 1, this.Name);
             var neighboursToAlertAux = new List<string>(neighboursToAlert.Keys);
 
             foreach (var neigh in neighboursToAlertAux)

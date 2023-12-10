@@ -107,7 +107,7 @@ namespace Project
         public static Pebble returnPebbleFromAlertString(string parameters)
         {
             string [] t = parameters.Split();
-            return new Pebble(t[0], Convert.ToInt32(t[1]), Convert.ToBoolean(t[2]), Convert.ToInt32(t[3]));
+            return new Pebble(t[0], Convert.ToInt32(t[1]), Convert.ToBoolean(t[2]), Convert.ToInt32(t[3]), t[4]);
         }
 
         public static string Str(object p1, object p2)
