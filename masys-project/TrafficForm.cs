@@ -87,11 +87,9 @@ namespace Project
             {
                 g.DrawLine(Pens.Black, 0, i * cellSize,  Utils.gridLength * cellSize, i * cellSize);
                 g.DrawLine(Pens.Black, i * cellSize, 0, i * cellSize, Utils.gridLength * cellSize);
-            }
 
-            for (int i = 0; i <= Utils.gridLength; i++)
-            {
-                g.DrawString(i.ToString(), new Font("Arial", 11), Brushes.Black, new PointF( 5, i * cellSize + 5));
+                //draw x and Y map coordinates
+                g.DrawString(i.ToString(), new Font("Arial", 11), Brushes.Black, new PointF(5, i * cellSize + 5));
                 g.DrawString(i.ToString(), new Font("Arial", 11), Brushes.Black, new PointF(i * cellSize + 5, 5));
             }
 
